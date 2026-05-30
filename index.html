@@ -125,6 +125,11 @@ var DIARIES = [
 ];
 var LS_KEY='yono-diary-edits-v1';
 
+// ====== 가족 공유 저장소 (한 번만 아빠가 만들어 주소만 넣으면 됨) ======
+// 비어 있으면 = 지금처럼 이 폰에만 저장. 주소를 넣으면 = 가족 모두 같은 내용 자동 동기화.
+// 예시: 'https://yono-diary-xxxx-default-rtdb.firebaseio.com/edits'
+var SYNC_URL='';
+
 (function(){
   var tabsEl=document.getElementById('tabs'),dateText=document.getElementById('dateText'),weatherText=document.getElementById('weatherText'),titleText=document.getElementById('titleText'),
       bodyEl=document.getElementById('bodyText'),countNum=document.getElementById('countNum'),countBox=document.getElementById('countBox'),savedFlag=document.getElementById('savedFlag'),
@@ -133,10 +138,30 @@ var LS_KEY='yono-diary-edits-v1';
       sendBtn=document.getElementById('sendBtn'),sendLabel=document.getElementById('sendLabel'),toast=document.getElementById('toast');
   var cur=0,editing=false,speaking=false;
 
-  // 저장된 수정본 불러오기
+  // 저장된 수정본 불러오기 (이 폰)
   var edits={};
   try{ edits=JSON.parse(localStorage.getItem(LS_KEY)||'{}')||{}; }catch(e){ edits={}; }
-  DIARIES.forEach(function(d){ if(edits[d.id]&&edits[d.id].text){ d.text=edits[d.id].text; d.edited=true; } });
+  function applyEdits(){ DIARIES.forEach(function(d){ var e=edits[d.id]; if(e&&e.text){ d.text=e.text; d.edited=true; } }); }
+  applyEdits();
+  var synced=!!SYNC_URL;  // 공유 저장소 주소가 있으면 가족 동기화 ON
+
+  // 공유 저장소에서 최신본 가져오기 (가족 모두 같은 버전)
+  function pullShared(cb){
+    if(!synced){ if(cb)cb(); return; }
+    fetch(SYNC_URL+'.json?_='+Date.now()).then(function(r){return r.ok?r.json():null;}).then(function(srv){
+      if(srv){
+        Object.keys(srv).forEach(function(id){
+          var s=srv[id]; if(!s||!s.text) return;
+          var local=edits[id];
+          // 더 최근에 저장된 쪽을 정본으로 (시간 비교)
+          if(!local||!local.savedAt||(s.savedAt&&s.savedAt>local.savedAt)){ edits[id]={text:s.text,savedAt:s.savedAt}; }
+        });
+        try{ localStorage.setItem(LS_KEY,JSON.stringify(edits)); }catch(e){}
+        applyEdits();
+      }
+      if(cb)cb();
+    }).catch(function(){ if(cb)cb(); });
+  }
 
   function countChars(t){return (t||'').replace(/\s/g,'').length}
   function pulseCount(n){countNum.textContent=n;countBox.classList.add('pulse');setTimeout(function(){countBox.classList.remove('pulse')},500)}
@@ -146,9 +171,14 @@ var LS_KEY='yono-diary-edits-v1';
 
   function persist(){
     var d=DIARIES[cur];
-    edits[d.id]={text:d.text,savedAt:new Date().toISOString()};
+    var rec={text:d.text,savedAt:new Date().toISOString()};
+    edits[d.id]=rec;
     try{ localStorage.setItem(LS_KEY,JSON.stringify(edits)); }catch(e){}
     d.edited=true;
+    // 공유 저장소에도 올려서 가족 모두 같은 버전 보이게
+    if(synced){
+      try{ fetch(SYNC_URL+'/'+d.id+'.json',{method:'PUT',body:JSON.stringify(rec)}).catch(function(){}); }catch(e){}
+    }
   }
 
   function render(){
@@ -159,7 +189,7 @@ var LS_KEY='yono-diary-edits-v1';
     var em=titleEmoji(d.title);var rest=plainTitle(d.title);
     titleText.innerHTML=em?('<span class="emoji">'+em+'</span>'+rest):d.title;
     bodyEl.textContent=d.text;
-    savedFlag.textContent=d.edited?'· 수정함 ✓':'';
+    savedFlag.textContent=d.edited?(synced?'· 가족 모두에게 저장됨 ✓':'· 이 폰에 저장됨 ✓'):'';
     pulseCount(countChars(d.text));
   }
 
@@ -185,8 +215,8 @@ var LS_KEY='yono-diary-edits-v1';
     var d=DIARIES[cur];
     var newText=bodyEl.textContent.replace(/ /g,' ').replace(/[ \t]+\n/g,'\n').trim();
     d.text=newText;persist();
-    var n=countChars(newText);pulseCount(n);savedFlag.textContent='· 수정함 ✓';
-    if(!silent) showToast('💾 저장 완료! 글자 수 '+n+'자 (띄어쓰기 제외)');
+    var n=countChars(newText);pulseCount(n);savedFlag.textContent=synced?'· 가족 모두에게 저장됨 ✓':'· 이 폰에 저장됨 ✓';
+    if(!silent) showToast(synced?('💾 저장 완료! 가족 모두에게 반영됐어요 ('+n+'자)'):('💾 이 폰에 저장됐어요 ('+n+'자) · 가족에게 보내려면 📤'));
   }
   editBtn.addEventListener('click',function(){ if(!editing){startEdit();}else{endEdit(false);} });
   bodyEl.addEventListener('input',function(){if(editing){countNum.textContent=countChars(bodyEl.textContent)}});
@@ -223,6 +253,13 @@ var LS_KEY='yono-diary-edits-v1';
 
   if(!DIARIES.length){bodyEl.textContent='일기를 불러오지 못했어요.';return}
   buildTabs();render();
+
+  // 가족 동기화: 처음에 최신본 한 번 + 이후 자동으로 새로고침해서 상대방 저장분 가져오기
+  if(synced){
+    pullShared(function(){ render(); });
+    setInterval(function(){ if(editing) return; pullShared(function(){ if(!editing) render(); }); }, 4000);
+    document.addEventListener('visibilitychange',function(){ if(!document.hidden&&!editing) pullShared(function(){ if(!editing) render(); }); });
+  }
 })();
 </script>
 </body>
