@@ -35,8 +35,10 @@ body::before{content:"";position:fixed;inset:-10%;z-index:-1;background:radial-g
 .btn-edit{background:linear-gradient(135deg,#0284c7,#7c3aed)}
 .btn-edit.on{background:linear-gradient(135deg,#ea580c,#dc2626);animation:editPulse 2s ease-in-out infinite}
 @keyframes editPulse{0%,100%{box-shadow:0 5px 14px rgba(220,38,38,.4)}50%{box-shadow:0 5px 22px rgba(220,38,38,.7)}}
-.btn-tts{background:linear-gradient(135deg,#16a34a,#22c55e)}
-.btn-tts.on{background:linear-gradient(135deg,#dc2626,#ea580c)}
+.btn-tts{background:linear-gradient(135deg,#16a34a,#22c55e);width:clamp(42px,4.2vw,54px);height:clamp(42px,4.2vw,54px);padding:0;border-radius:50%;justify-content:center;font-size:clamp(15px,1.7vw,20px);line-height:1}
+.btn-tts.on{background:linear-gradient(135deg,#dc2626,#ea580c);animation:editPulse 1.6s ease-in-out infinite}
+.btn-tts #ttsLabel{margin-left:2px}
+.btn-tts.on #ttsLabel{margin-left:0}
 .btn-send{background:linear-gradient(135deg,#f59e0b,#d97706)}
 .btn-send.done{background:linear-gradient(135deg,#16a34a,#22c55e)}
 .toast{position:fixed;top:32px;left:50%;transform:translateX(-50%) translateY(-120px);background:#0f172a;color:#fff;padding:14px 28px;border-radius:14px;font-weight:900;font-size:16px;box-shadow:0 14px 36px rgba(0,0,0,.4);transition:transform .35s cubic-bezier(.18,.89,.32,1.28);z-index:100;max-width:90vw;text-align:center}
@@ -60,6 +62,7 @@ body::before{content:"";position:fixed;inset:-10%;z-index:-1;background:radial-g
   .footer{flex-direction:column;align-items:stretch;gap:10px;margin-top:16px}
   .btns{justify-content:flex-start}
   .btn{font-size:14px;padding:11px 16px;flex:1;justify-content:center}
+  .btn-tts{flex:0 0 auto;width:48px;height:48px;font-size:18px}
   .count{font-size:14px;text-align:center}
 }
 </style>
@@ -81,7 +84,7 @@ body::before{content:"";position:fixed;inset:-10%;z-index:-1;background:radial-g
     <div class="count" id="countBox">✏ 본문 글자 수 (띄어쓰기 제외) : <b id="countNum">0</b>자<span class="saved-flag" id="savedFlag"></span></div>
     <div class="btns">
       <button class="btn btn-edit" id="editBtn"><span id="editLabel">✏ 편집하기</span></button>
-      <button class="btn btn-tts" id="ttsBtn"><span id="ttsLabel">🔊 읽어주기</span></button>
+      <button class="btn btn-tts" id="ttsBtn" title="읽어주기" aria-label="읽어주기"><span id="ttsLabel">▶</span></button>
       <button class="btn btn-send" id="sendBtn"><span id="sendLabel">📤 아빠한테 보내기</span></button>
     </div>
   </div>
@@ -180,8 +183,8 @@ var LS_KEY='yono-diary-edits-v1';
     if(!('speechSynthesis' in window)){showToast('⚠ 이 폰은 음성 읽기를 지원하지 않아요');return}
     var u=new SpeechSynthesisUtterance(bodyEl.textContent.trim());u.lang='ko-KR';u.rate=0.95;u.pitch=1.05;u.volume=1;
     var vc=findKoreanVoice();if(vc)u.voice=vc;
-    u.onstart=function(){speaking=true;ttsBtn.classList.add('on');ttsLabel.textContent='⏸ 정지'};
-    u.onend=u.onerror=function(){speaking=false;ttsBtn.classList.remove('on');ttsLabel.textContent='🔊 읽어주기'};
+    u.onstart=function(){speaking=true;ttsBtn.classList.add('on');ttsLabel.textContent='⏸'};
+    u.onend=u.onerror=function(){speaking=false;ttsBtn.classList.remove('on');ttsLabel.textContent='▶'};
     window.speechSynthesis.speak(u);
   });
   if('speechSynthesis' in window){window.speechSynthesis.onvoiceschanged=function(){}}
