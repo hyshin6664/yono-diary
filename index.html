@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>윤오 일기</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:"Apple SD Gothic Neo","Pretendard","Malgun Gothic",system-ui,sans-serif;background:linear-gradient(135deg,#fef3c7 0%,#fde68a 30%,#fbbf24 60%,#f59e0b 100%);color:#1c1917;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2vh 2vw;position:relative;overflow:hidden}
+body::before{content:"";position:fixed;inset:-10%;z-index:-1;background:radial-gradient(circle at 15% 25%,rgba(255,255,255,.7),transparent 35%),radial-gradient(circle at 85% 75%,rgba(255,200,100,.5),transparent 40%),radial-gradient(circle at 50% 50%,rgba(254,243,199,.4),transparent 60%);filter:blur(40px);animation:drift 20s ease-in-out infinite alternate}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(3%,-2%) scale(1.05)}}
+.tabs{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;justify-content:center}
+.tab{font-family:inherit;font-size:clamp(13px,1.5vw,17px);font-weight:900;padding:10px 22px;border:2px solid rgba(217,119,6,.4);border-radius:999px;cursor:pointer;background:rgba(255,251,233,.85);color:#9a3412;box-shadow:0 4px 12px rgba(146,64,14,.15);transition:transform .15s,box-shadow .2s,background .2s,color .2s}
+.tab:hover{transform:translateY(-2px)}
+.tab.on{background:linear-gradient(135deg,#ea580c,#dc2626);color:#fff;border-color:transparent;box-shadow:0 6px 18px rgba(220,38,38,.35)}
+.paper{width:min(96vw,1200px);height:min(86vh,820px);background:#fffbe9;border-radius:24px;box-shadow:0 25px 60px rgba(146,64,14,.25),0 0 0 8px rgba(255,255,255,.6),inset 0 0 0 2px rgba(217,119,6,.15);padding:clamp(20px,3.5vh,40px) clamp(30px,4vw,60px);display:flex;flex-direction:column;position:relative;background-image:repeating-linear-gradient(transparent,transparent calc(1em * 1.9 - 1px),rgba(2,132,199,.1) calc(1em * 1.9 - 1px),rgba(2,132,199,.1) calc(1em * 1.9));background-size:100% calc(1em * 1.9)}
+.paper::before{content:"";position:absolute;left:48px;top:0;bottom:0;border-left:2px solid rgba(220,38,38,.35)}
+.header{display:flex;align-items:baseline;gap:clamp(12px,2vw,24px);margin-bottom:clamp(10px,1.5vh,20px);padding-bottom:clamp(8px,1.5vh,16px);border-bottom:3px dashed rgba(217,119,6,.4);flex-wrap:wrap}
+.date{font-size:clamp(15px,1.6vw,20px);font-weight:700;color:#92400e;letter-spacing:.5px}
+.date .weather{margin-left:8px;background:rgba(254,243,199,.9);padding:2px 12px;border-radius:999px;font-size:.85em;color:#7c2d12}
+.title{font-size:clamp(26px,4.2vw,48px);font-weight:900;color:#7c2d12;letter-spacing:-1.5px;margin-left:auto;text-shadow:2px 2px 0 rgba(255,255,255,.8),3px 3px 0 rgba(217,119,6,.15)}
+.title .emoji{margin-right:8px}
+.body{flex:1;font-size:clamp(17px,2vw,26px);line-height:1.9;color:#1c1917;font-weight:500;letter-spacing:-.3px;padding:clamp(8px,1.5vh,16px) 0;overflow:auto;display:flex;align-items:center}
+.body p{text-align:justify;word-break:keep-all;outline:none;border-radius:10px;padding:6px 10px;margin:-6px -10px;transition:background .25s,box-shadow .25s;width:100%}
+.body p[contenteditable="true"]{background:rgba(254,240,138,.6);box-shadow:0 0 0 3px rgba(234,179,8,.4),inset 0 0 0 2px rgba(217,119,6,.3);cursor:text}
+.body p[contenteditable="true"]:focus{background:rgba(254,240,138,.85);box-shadow:0 0 0 4px rgba(234,179,8,.6)}
+.footer{display:flex;align-items:center;justify-content:space-between;padding-top:clamp(8px,1.5vh,14px);border-top:2px solid rgba(217,119,6,.25);gap:10px;flex-wrap:wrap}
+.count{font-size:clamp(13px,1.4vw,17px);color:#9a3412;font-weight:800;background:rgba(254,243,199,.95);padding:6px 16px;border-radius:999px;border:1.5px solid rgba(217,119,6,.4);transition:background .25s,transform .25s}
+.count b{color:#dc2626;font-size:1.1em;margin:0 3px}
+.count.pulse{background:rgba(254,240,138,1);transform:scale(1.08)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:inherit;font-size:clamp(12.5px,1.35vw,16px);font-weight:900;padding:9px 18px;border:none;border-radius:999px;cursor:pointer;box-shadow:0 5px 14px rgba(0,0,0,.18);transition:transform .15s,box-shadow .2s,background .2s;letter-spacing:.5px;display:inline-flex;align-items:center;gap:6px;color:#fff}
+.btn:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 9px 20px rgba(0,0,0,.25)}
+.btn-edit{background:linear-gradient(135deg,#0284c7,#7c3aed)}
+.btn-edit.on{background:linear-gradient(135deg,#ea580c,#dc2626);animation:editPulse 2s ease-in-out infinite}
+@keyframes editPulse{0%,100%{box-shadow:0 5px 14px rgba(220,38,38,.4)}50%{box-shadow:0 5px 22px rgba(220,38,38,.7)}}
+.btn-tts{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.btn-tts.on{background:linear-gradient(135deg,#dc2626,#ea580c)}
+.btn-send{background:linear-gradient(135deg,#f59e0b,#d97706)}
+.btn-send.done{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.toast{position:fixed;top:32px;left:50%;transform:translateX(-50%) translateY(-120px);background:#0f172a;color:#fff;padding:14px 28px;border-radius:14px;font-weight:900;font-size:16px;box-shadow:0 14px 36px rgba(0,0,0,.4);transition:transform .35s cubic-bezier(.18,.89,.32,1.28);z-index:100;max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.edit-banner{position:fixed;top:0;left:0;right:0;background:linear-gradient(90deg,#dc2626,#ea580c,#dc2626);color:#fff;text-align:center;padding:6px 14px;font-size:13px;font-weight:900;letter-spacing:.5px;transform:translateY(-100%);transition:transform .3s;z-index:50;box-shadow:0 4px 14px rgba(220,38,38,.4)}
+.edit-banner.show{transform:translateY(0)}
+.saved-flag{font-size:.8em;color:#16a34a;margin-left:8px}
+@media (max-width:640px){
+  html,body{height:auto;min-height:100%;overflow:visible;overflow-x:hidden}
+  body{display:block;padding:12px}
+  body::before{display:none}
+  .tabs{margin-bottom:12px}
+  .tab{font-size:14px;padding:10px 18px}
+  .paper{width:auto;height:auto;min-height:0;border-radius:16px;padding:18px 16px;display:block;background-size:100% 1.8em}
+  .paper::before{display:none}
+  .header{flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:14px;padding-bottom:12px}
+  .title{font-size:25px;margin-left:0;letter-spacing:-1px}
+  .date{font-size:15px}
+  .body{display:block;flex:none;overflow:visible;font-size:18px;line-height:1.85;padding:6px 0;align-items:flex-start}
+  .body p{text-align:left}
+  .footer{flex-direction:column;align-items:stretch;gap:10px;margin-top:16px}
+  .btns{justify-content:flex-start}
+  .btn{font-size:14px;padding:11px 16px;flex:1;justify-content:center}
+  .count{font-size:14px;text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="edit-banner" id="editBanner">✏ 편집 모드 — 본문을 직접 고치세요. 다 고치면 「💾 저장」을 누르세요</div>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="paper">
+  <div class="header">
+    <div class="date" id="dateBox">📅 <span id="dateText"></span> <span class="weather" id="weatherText"></span></div>
+    <div class="title" id="titleText"></div>
+  </div>
+  <div class="body">
+    <p id="bodyText"></p>
+  </div>
+  <div class="footer">
+    <div class="count" id="countBox">✏ 본문 글자 수 (띄어쓰기 제외) : <b id="countNum">0</b>자<span class="saved-flag" id="savedFlag"></span></div>
+    <div class="btns">
+      <button class="btn btn-edit" id="editBtn"><span id="editLabel">✏ 편집하기</span></button>
+      <button class="btn btn-tts" id="ttsBtn"><span id="ttsLabel">🔊 읽어주기</span></button>
+      <button class="btn btn-send" id="sendBtn"><span id="sendLabel">📤 아빠한테 보내기</span></button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast">✓ 저장됐어요!</div>
+
+<script>
+// ====== 일기 원본 (수정본은 이 폰 안에 자동 저장됨) ======
+var DIARIES = [
+  {
+    id:'d20260529',
+    date:'2026년 5월 29일 금요일',
+    weather:'☀ 맑음',
+    title:'🚶 효재랑 같이 간 날',
+    text:'나는 오늘 일어나서 아침을 먹고 학교에 갔다. 효재가 끝나고 같이 가자고 해서 나도 같이 가기로 했다. 점심을 먹고 피구를 하려고 했는데 시간이 없어 못했다. 그러고 5교시에 선생님이랑 피구를 했다. 그런데 안시율이 잘하는 애들을 다 데리고 갔다. 민해가 골랐는데 그래도 잘하는 친구들이 몇 명 있었다. 첫판은 이기고 둘째 판 셋째 판은 모두 졌다. 나는 아쉬웠다. 효재와 같이 갈 시간이 되어 처음이라 엄청 기대됐다. 어디서 내릴지 이야기하다가 효재 마음이 바뀌어 내 집 근처에서 내리기로 했다. 그다음 수학 학원 숙제를 하고 학원에 갔다가 검도 학원에 갔다. 검도 학원에서 피구를 하다가 철에 부딪쳐서 멍이 왔다. 집에 와서 봤는데 엄청 컸다.'
+  },
+  {
+    id:'d20260521',
+    date:'2026년 5월 21일 목요일',
+    weather:'☀ 맑음',
+    title:'🎬 4D 마리오',
+    text:'나는 오늘 청주로 4D 마리오갤럭시 영화를 보러 갔다. 출발했는데 늦지는 않았다. 1층을 구경했는데 미니 자동차 건담 등 신기한 게 많았다. 엄마 아빠가 4D는 물이 나온다고 해서 기대됐다. 그런데 물이 조금만 나와서 아쉬웠다. 의자가 움직이는 건 신기했다. 영화 끝나고 현대백화점에서 점심 먹고 일기 몇 편 쓰다가 옆 롯데 아울렛에 갔다. 새로 나온 메탈카드봇이 멋있어서 사고 싶었는데 엄마가 안 된다고 했다. 아빠는 전동물총을 갖고 싶다고 했는데 내가 그건 빨리 고장난다고 했다. 닌텐도 마리오 2가 있어서 그걸 했다. 그러고 내일 먹을 음식을 샀다. 바닷가에 가려고 했는데 너무 늦어서 못 갔다. 우리는 집으로 올라왔다.'
+  }
+];
+var LS_KEY='yono-diary-edits-v1';
+
+(function(){
+  var tabsEl=document.getElementById('tabs'),dateText=document.getElementById('dateText'),weatherText=document.getElementById('weatherText'),titleText=document.getElementById('titleText'),
+      bodyEl=document.getElementById('bodyText'),countNum=document.getElementById('countNum'),countBox=document.getElementById('countBox'),savedFlag=document.getElementById('savedFlag'),
+      editBtn=document.getElementById('editBtn'),editLabel=document.getElementById('editLabel'),editBanner=document.getElementById('editBanner'),
+      ttsBtn=document.getElementById('ttsBtn'),ttsLabel=document.getElementById('ttsLabel'),
+      sendBtn=document.getElementById('sendBtn'),sendLabel=document.getElementById('sendLabel'),toast=document.getElementById('toast');
+  var cur=0,editing=false,speaking=false;
+
+  // 저장된 수정본 불러오기
+  var edits={};
+  try{ edits=JSON.parse(localStorage.getItem(LS_KEY)||'{}')||{}; }catch(e){ edits={}; }
+  DIARIES.forEach(function(d){ if(edits[d.id]&&edits[d.id].text){ d.text=edits[d.id].text; d.edited=true; } });
+
+  function countChars(t){return (t||'').replace(/\s/g,'').length}
+  function pulseCount(n){countNum.textContent=n;countBox.classList.add('pulse');setTimeout(function(){countBox.classList.remove('pulse')},500)}
+  function showToast(msg){toast.textContent=msg;toast.classList.add('show');setTimeout(function(){toast.classList.remove('show')},2800)}
+  function titleEmoji(t){var m=(t||'').match(/^\s*(\p{Emoji_Presentation}|\p{Extended_Pictographic})/u);return m?m[0]:'';}
+  function plainTitle(t){return (t||'').replace(/^\s*(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s*/u,'').trim();}
+
+  function persist(){
+    var d=DIARIES[cur];
+    edits[d.id]={text:d.text,savedAt:new Date().toISOString()};
+    try{ localStorage.setItem(LS_KEY,JSON.stringify(edits)); }catch(e){}
+    d.edited=true;
+  }
+
+  function render(){
+    var d=DIARIES[cur];
+    Array.prototype.forEach.call(tabsEl.children,function(b,i){b.classList.toggle('on',i===cur)});
+    dateText.textContent=d.date;
+    weatherText.textContent=d.weather||'';
+    var em=titleEmoji(d.title);var rest=plainTitle(d.title);
+    titleText.innerHTML=em?('<span class="emoji">'+em+'</span>'+rest):d.title;
+    bodyEl.textContent=d.text;
+    savedFlag.textContent=d.edited?'· 수정함 ✓':'';
+    pulseCount(countChars(d.text));
+  }
+
+  function buildTabs(){
+    DIARIES.forEach(function(d,i){
+      var b=document.createElement('button');b.className='tab';
+      var md=(d.date||'').match(/(\d+)월\s*(\d+)일/);
+      var lab=md?(md[1]+'/'+md[2]):('일기 '+(i+1));
+      b.textContent=lab+' · '+plainTitle(d.title);
+      b.addEventListener('click',function(){if(i===cur)return;if(editing){endEdit(true);}cur=i;render();});
+      tabsEl.appendChild(b);
+    });
+  }
+
+  function startEdit(){
+    editing=true;bodyEl.contentEditable='true';bodyEl.focus();
+    editBtn.classList.add('on');editLabel.textContent='💾 저장';editBanner.classList.add('show');
+    var range=document.createRange();range.selectNodeContents(bodyEl);range.collapse(false);
+    var sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
+  }
+  function endEdit(silent){
+    editing=false;bodyEl.contentEditable='false';editBtn.classList.remove('on');editLabel.textContent='✏ 편집하기';editBanner.classList.remove('show');
+    var d=DIARIES[cur];
+    var newText=bodyEl.textContent.replace(/ /g,' ').replace(/[ \t]+\n/g,'\n').trim();
+    d.text=newText;persist();
+    var n=countChars(newText);pulseCount(n);savedFlag.textContent='· 수정함 ✓';
+    if(!silent) showToast('💾 저장 완료! 글자 수 '+n+'자 (띄어쓰기 제외)');
+  }
+  editBtn.addEventListener('click',function(){ if(!editing){startEdit();}else{endEdit(false);} });
+  bodyEl.addEventListener('input',function(){if(editing){countNum.textContent=countChars(bodyEl.textContent)}});
+
+  function findKoreanVoice(){var v=window.speechSynthesis.getVoices();var p=v.find(function(x){return x.lang==='ko-KR'&&/Natural|Premium|Online|Siri|Yuna/i.test(x.name)});if(p)return p;var k=v.find(function(x){return x.lang==='ko-KR'});return k||v.find(function(x){return x.lang.indexOf('ko')===0})}
+  ttsBtn.addEventListener('click',function(){
+    if(speaking){window.speechSynthesis.cancel();return}
+    if(!('speechSynthesis' in window)){showToast('⚠ 이 폰은 음성 읽기를 지원하지 않아요');return}
+    var u=new SpeechSynthesisUtterance(bodyEl.textContent.trim());u.lang='ko-KR';u.rate=0.95;u.pitch=1.05;u.volume=1;
+    var vc=findKoreanVoice();if(vc)u.voice=vc;
+    u.onstart=function(){speaking=true;ttsBtn.classList.add('on');ttsLabel.textContent='⏸ 정지'};
+    u.onend=u.onerror=function(){speaking=false;ttsBtn.classList.remove('on');ttsLabel.textContent='🔊 읽어주기'};
+    window.speechSynthesis.speak(u);
+  });
+  if('speechSynthesis' in window){window.speechSynthesis.onvoiceschanged=function(){}}
+
+  // 📤 아빠한테 보내기 — 폰 공유시트(카톡/문자)로 수정본 + 글자 수 전송
+  sendBtn.addEventListener('click',function(){
+    if(editing){endEdit(true);}
+    var d=DIARIES[cur];var n=countChars(d.text);
+    var msg='[윤오 일기 수정본]\n'+d.date+' ('+plainTitle(d.weather||'').replace(/[^가-힣]/g,'')+')\n제목 : '+plainTitle(d.title)+'\n글자 수(띄어쓰기 제외) : '+n+'자\n\n'+d.text;
+    function done(){sendBtn.classList.add('done');sendLabel.textContent='✓ 보냈어요!';setTimeout(function(){sendBtn.classList.remove('done');sendLabel.textContent='📤 아빠한테 보내기'},3000)}
+    if(navigator.share){
+      navigator.share({title:'윤오 일기 수정본',text:msg}).then(done).catch(function(){ copyText(msg,function(){showToast('📋 복사됐어요! 카톡에 붙여넣어 보내주세요');done();}); });
+    }else{
+      copyText(msg,function(){showToast('📋 복사됐어요! 카톡에 붙여넣어 보내주세요');done();});
+    }
+  });
+  function copyText(text,cb){
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(cb).catch(function(){fallbackCopy(text,cb)})}
+    else{fallbackCopy(text,cb)}
+  }
+  function fallbackCopy(text,cb){var ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();cb()}
+
+  if(!DIARIES.length){bodyEl.textContent='일기를 불러오지 못했어요.';return}
+  buildTabs();render();
+})();
+</script>
+</body>
+</html>
