@@ -125,10 +125,24 @@ var DIARIES = [
 ];
 var LS_KEY='yono-diary-edits-v2';
 
-// ====== 가족 공유 저장소 (한 번만 아빠가 만들어 주소만 넣으면 됨) ======
-// 비어 있으면 = 지금처럼 이 폰에만 저장. 주소를 넣으면 = 가족 모두 같은 내용 자동 동기화.
-// 예시: 'https://yono-diary-xxxx-default-rtdb.firebaseio.com/edits'
-var SYNC_URL='';
+// ====== 가족 공유 저장소 (로그인 없이 가족 모두 같은 버전 자동 동기화) ======
+// 엄마가 폰에서 고쳐 저장하면 → 아빠 폰/PC에서 같은 링크로 똑같은 내용이 바로 보여요.
+var SYNC_URL='https://textdb.dev/api/data/yono-diary-fam-9f3kx72-shin';
+
+// 공유 저장소 읽기: 한 덩어리 JSON {일기id:{text,savedAt}} 형태로 보관
+function fetchShared(cb){
+  fetch(SYNC_URL+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():null;}).then(function(t){
+    if(t==null){cb(null);return;}
+    if(t.indexOf('value=')===0)t=t.slice(6);
+    var obj=null;try{obj=JSON.parse(t);}catch(e){obj=null;}
+    cb(obj);
+  }).catch(function(){cb(null);});
+}
+// 공유 저장소에 한 덩어리로 통째 저장
+function putShared(map){
+  var body='value='+encodeURIComponent(JSON.stringify(map));
+  return fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body});
+}
 
 (function(){
   var tabsEl=document.getElementById('tabs'),dateText=document.getElementById('dateText'),weatherText=document.getElementById('weatherText'),titleText=document.getElementById('titleText'),
@@ -148,7 +162,7 @@ var SYNC_URL='';
   // 공유 저장소에서 최신본 가져오기 (가족 모두 같은 버전)
   function pullShared(cb){
     if(!synced){ if(cb)cb(); return; }
-    fetch(SYNC_URL+'.json?_='+Date.now()).then(function(r){return r.ok?r.json():null;}).then(function(srv){
+    fetchShared(function(srv){
       if(srv){
         Object.keys(srv).forEach(function(id){
           var s=srv[id]; if(!s||!s.text) return;
@@ -160,7 +174,7 @@ var SYNC_URL='';
         applyEdits();
       }
       if(cb)cb();
-    }).catch(function(){ if(cb)cb(); });
+    });
   }
 
   function countChars(t){return (t||'').replace(/\s/g,'').length}
@@ -176,8 +190,18 @@ var SYNC_URL='';
     try{ localStorage.setItem(LS_KEY,JSON.stringify(edits)); }catch(e){}
     d.edited=true;
     // 공유 저장소에도 올려서 가족 모두 같은 버전 보이게
+    // (서버 최신본을 먼저 받아서 이 일기만 갱신 → 다른 일기는 안 지워지게 통째 저장)
     if(synced){
-      try{ fetch(SYNC_URL+'/'+d.id+'.json',{method:'PUT',body:JSON.stringify(rec)}).catch(function(){}); }catch(e){}
+      fetchShared(function(srv){
+        var map=(srv&&typeof srv==='object')?srv:{};
+        Object.keys(edits).forEach(function(id){
+          var mine=edits[id]; if(!mine||!mine.text) return;
+          var ex=map[id];
+          if(!ex||!ex.savedAt||(mine.savedAt&&mine.savedAt>=ex.savedAt)) map[id]=mine;
+        });
+        map[d.id]=rec;
+        putShared(map).catch(function(){});
+      });
     }
   }
 
