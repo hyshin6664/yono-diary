@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>윤오 영어단어</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:"Apple SD Gothic Neo","Pretendard","Malgun Gothic",system-ui,sans-serif;background:linear-gradient(135deg,#dbeafe 0%,#bfdbfe 30%,#93c5fd 60%,#60a5fa 100%);color:#0c2a4d;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3vh 4vw;min-height:100%}
+.top{display:flex;gap:10px;align-items:center;margin-bottom:18px}
+.back{font-family:inherit;font-size:15px;font-weight:900;padding:10px 18px;border:2px solid rgba(37,99,235,.4);border-radius:999px;background:rgba(255,255,255,.85);color:#1d4ed8;text-decoration:none;box-shadow:0 4px 12px rgba(30,64,175,.18)}
+.card{width:min(94vw,640px);background:#ffffff;border-radius:30px;box-shadow:0 25px 60px rgba(30,64,175,.28),0 0 0 8px rgba(255,255,255,.55);padding:clamp(26px,5vh,52px) clamp(22px,5vw,48px);text-align:center;position:relative}
+.cap{font-size:clamp(14px,2vw,18px);font-weight:800;color:#2563eb;letter-spacing:.5px;margin-bottom:6px}
+.word{font-size:clamp(48px,12vw,96px);font-weight:900;letter-spacing:-2px;color:#0c2a4d;line-height:1.05;transition:transform .2s,color .2s}
+.word.active{color:#2563eb;transform:scale(1.06)}
+.spell{display:flex;gap:clamp(6px,2vw,16px);justify-content:center;flex-wrap:wrap;margin:clamp(16px,3vh,28px) 0}
+.ltr{font-size:clamp(30px,8vw,56px);font-weight:900;color:#1e3a8a;background:#eff6ff;border:3px solid #bfdbfe;border-radius:16px;min-width:clamp(46px,12vw,76px);padding:clamp(6px,1.5vh,14px) 0;transition:transform .15s,background .15s,color .15s,border-color .15s}
+.ltr.active{background:#2563eb;color:#fff;border-color:#2563eb;transform:translateY(-6px) scale(1.1)}
+.ko{font-size:clamp(34px,9vw,64px);font-weight:900;color:#0c2a4d;margin-top:6px;transition:transform .2s,color .2s}
+.ko.active{color:#16a34a;transform:scale(1.08)}
+.play{margin-top:clamp(22px,4vh,36px);font-family:inherit;font-size:clamp(18px,3vw,24px);font-weight:900;padding:clamp(14px,2.5vh,20px) clamp(28px,6vw,48px);border:none;border-radius:999px;cursor:pointer;color:#fff;background:linear-gradient(135deg,#3b82f6,#2563eb);box-shadow:0 10px 26px rgba(37,99,235,.4);transition:transform .15s,box-shadow .2s,background .2s;display:inline-flex;align-items:center;gap:10px}
+.play:active{transform:scale(.96)}
+.play.on{background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 10px 26px rgba(220,38,38,.45);animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 10px 26px rgba(220,38,38,.45)}50%{box-shadow:0 10px 34px rgba(220,38,38,.75)}}
+.hint{margin-top:14px;font-size:clamp(13px,1.8vw,15px);color:#1d4ed8;font-weight:700;opacity:.85}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px}
+.navbtn{font-family:inherit;font-size:15px;font-weight:900;padding:8px 16px;border:2px solid rgba(37,99,235,.35);border-radius:999px;background:rgba(239,246,255,.9);color:#1d4ed8;cursor:pointer}
+.navbtn:disabled{opacity:.35;cursor:default}
+.pos{font-size:14px;font-weight:800;color:#2563eb}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="back" href="index.html">← 일기로</a>
+</div>
+<div class="card">
+  <div class="cap">🔤 영어 단어 외우기</div>
+  <div class="word" id="word">Shape</div>
+  <div class="spell" id="spell"></div>
+  <div class="ko" id="ko">모양</div>
+  <button class="play" id="playBtn"><span id="playIcon">▶</span><span id="playLabel">반복해서 읽기</span></button>
+  <div class="hint">버튼을 누르면 멈출 때까지 계속 반복해서 읽어줘요</div>
+  <div class="nav">
+    <button class="navbtn" id="prevBtn">◀ 이전</button>
+    <div class="pos" id="posText"></div>
+    <button class="navbtn" id="nextBtn">다음 ▶</button>
+  </div>
+</div>
+
+<script>
+// ====== 외울 단어 목록 (나중에 여기에 줄만 추가하면 단어가 늘어나요) ======
+var WORDS = [
+  { en:'Shape', ko:'모양' }
+  // 예) { en:'Apple', ko:'사과' },
+];
+
+(function(){
+  var wordEl=document.getElementById('word'), spellEl=document.getElementById('spell'), koEl=document.getElementById('ko'),
+      playBtn=document.getElementById('playBtn'), playIcon=document.getElementById('playIcon'), playLabel=document.getElementById('playLabel'),
+      prevBtn=document.getElementById('prevBtn'), nextBtn=document.getElementById('nextBtn'), posText=document.getElementById('posText');
+  var idx=0, looping=false, letterEls=[];
+
+  function pickVoice(lang){
+    var vs=window.speechSynthesis.getVoices()||[];
+    var ex=vs.filter(function(v){return (v.lang||'').toLowerCase().indexOf(lang.toLowerCase())===0;});
+    var nat=ex.filter(function(v){return /Natural|Premium|Online|Google|Siri|Yuna|Samantha|Nicky|Aaron/i.test(v.name);})[0];
+    return nat||ex[0]||null;
+  }
+  function clearActive(){ wordEl.classList.remove('active'); koEl.classList.remove('active'); letterEls.forEach(function(e){e.classList.remove('active');}); }
+
+  function renderWord(){
+    var w=WORDS[idx];
+    wordEl.textContent=w.en;
+    koEl.textContent=w.ko;
+    spellEl.innerHTML='';
+    letterEls=[];
+    w.en.toUpperCase().split('').forEach(function(ch){
+      var s=document.createElement('div'); s.className='ltr'; s.textContent=ch; spellEl.appendChild(s); letterEls.push(s);
+    });
+    posText.textContent=(idx+1)+' / '+WORDS.length;
+    prevBtn.disabled=(idx===0);
+    nextBtn.disabled=(idx===WORDS.length-1);
+    clearActive();
+  }
+
+  // 한 글자/단어 읽기 (끝나면 다음 단계 콜백)
+  function say(text,lang,rate,cb){
+    var u=new SpeechSynthesisUtterance(text);
+    u.lang=lang; u.rate=rate; u.pitch=1.05; u.volume=1;
+    var v=pickVoice(lang); if(v) u.voice=v;
+    u.onend=function(){ cb&&cb(); };
+    u.onerror=function(){ cb&&cb(); };
+    window.speechSynthesis.speak(u);
+  }
+
+  // 한 바퀴: 영어 단어 → 스펠링 한 글자씩 → 한글 뜻 → (계속이면) 다시
+  function playCycle(){
+    if(!looping) return;
+    var w=WORDS[idx];
+    var steps=[];
+    steps.push({el:wordEl, text:w.en, lang:'en-US', rate:0.8});
+    w.en.split('').forEach(function(ch,i){
+      steps.push({el:letterEls[i], text:ch.toUpperCase(), lang:'en-US', rate:0.55});
+    });
+    steps.push({el:koEl, text:w.ko, lang:'ko-KR', rate:0.9});
+    var i=0;
+    (function next(){
+      if(!looping) return;
+      if(i>=steps.length){ clearActive(); setTimeout(function(){ if(looping) playCycle(); }, 800); return; }
+      var s=steps[i++];
+      clearActive(); s.el.classList.add('active');
+      say(s.text, s.lang, s.rate, next);
+    })();
+  }
+
+  function start(){
+    if(!('speechSynthesis' in window)){ alert('이 기기는 소리 읽기를 지원하지 않아요'); return; }
+    looping=true; playBtn.classList.add('on'); playIcon.textContent='⏸'; playLabel.textContent='멈추기';
+    window.speechSynthesis.cancel();
+    playCycle();
+  }
+  function stop(){
+    looping=false; playBtn.classList.remove('on'); playIcon.textContent='▶'; playLabel.textContent='반복해서 읽기';
+    window.speechSynthesis.cancel(); clearActive();
+  }
+  playBtn.addEventListener('click',function(){ looping?stop():start(); });
+  prevBtn.addEventListener('click',function(){ if(idx>0){ stop(); idx--; renderWord(); } });
+  nextBtn.addEventListener('click',function(){ if(idx<WORDS.length-1){ stop(); idx++; renderWord(); } });
+  // 다른 화면 가거나 숨겨지면 소리 멈춤
+  document.addEventListener('visibilitychange',function(){ if(document.hidden) stop(); });
+  window.addEventListener('pagehide',stop);
+  if('speechSynthesis' in window){ window.speechSynthesis.onvoiceschanged=function(){}; }
+
+  renderWord();
+})();
+</script>
+</body>
+</html>

@@ -38,6 +38,7 @@ body::before{content:"";position:fixed;inset:-10%;z-index:-1;background:radial-g
 .btns{display:flex;gap:8px;flex-wrap:wrap}
 .btn{font-family:inherit;font-size:clamp(12.5px,1.35vw,16px);font-weight:900;padding:9px 18px;border:none;border-radius:999px;cursor:pointer;box-shadow:0 5px 14px rgba(0,0,0,.18);transition:transform .15s,box-shadow .2s,background .2s;letter-spacing:.5px;display:inline-flex;align-items:center;gap:6px;color:#fff}
 .btn:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 9px 20px rgba(0,0,0,.25)}
+.btn-eng{background:linear-gradient(135deg,#3b82f6,#2563eb);text-decoration:none}
 .btn-edit{background:linear-gradient(135deg,#0284c7,#7c3aed)}
 .btn-edit.on{background:linear-gradient(135deg,#ea580c,#dc2626);animation:editPulse 2s ease-in-out infinite}
 @keyframes editPulse{0%,100%{box-shadow:0 5px 14px rgba(220,38,38,.4)}50%{box-shadow:0 5px 22px rgba(220,38,38,.7)}}
@@ -91,6 +92,7 @@ body::before{content:"";position:fixed;inset:-10%;z-index:-1;background:radial-g
   <div class="footer">
     <div class="count" id="countBox">✏ 본문 글자 수 (띄어쓰기 제외) : <b id="countNum">0</b>자<span class="saved-flag" id="savedFlag"></span></div>
     <div class="btns">
+      <a class="btn btn-eng" href="english.html">🔤 영어단어</a>
       <button class="btn btn-edit" id="editBtn"><span id="editLabel">✏ 편집하기</span></button>
       <button class="btn btn-tts" id="ttsBtn" title="읽어주기" aria-label="읽어주기"><span id="ttsLabel">▶</span></button>
       <button class="btn btn-send" id="sendBtn"><span id="sendLabel">📤 아빠한테 보내기</span></button>
