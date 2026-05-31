@@ -344,10 +344,12 @@ function putShared(map){
     hlOn=on;
     if(on){
       if(editing){ endEdit(true); }                 // 편집 중이면 먼저 저장하고 형광펜 모드로
-      hlCanvas.style.display='block'; hlResize();
+      bodyEl.style.fontSize='30px';                  // 형광펜 켜면 글씨 30px (칠하기 쉽게)
+      hlCanvas.style.display='block'; hlResize();     // 글씨 키운 뒤 캔버스 크기 다시 맞추기
       hlCanvas.classList.add('on'); hlFab.classList.add('on'); hlFab.textContent='✓';
     }else{
       hlClear(); hlCanvas.style.display='none';
+      bodyEl.style.fontSize='';                       // 끄면 원래 글씨 크기로
       hlCanvas.classList.remove('on'); hlFab.classList.remove('on'); hlFab.textContent='🖍';
     }
   }
