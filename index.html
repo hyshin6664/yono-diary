@@ -183,6 +183,29 @@ function putShared(map){
   function titleEmoji(t){var m=(t||'').match(/^\s*(\p{Emoji_Presentation}|\p{Extended_Pictographic})/u);return m?m[0]:'';}
   function plainTitle(t){return (t||'').replace(/^\s*(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s*/u,'').trim();}
 
+  // 편집한 본문을 읽을 때 줄바꿈을 살려서 가져오기 (textContent 는 <br>/<div> 줄나눔을 버려서 못 씀)
+  function editableToText(el){
+    var out='';
+    (function walk(node){
+      var kids=node.childNodes;
+      for(var i=0;i<kids.length;i++){
+        var c=kids[i];
+        if(c.nodeType===3){ out+=c.nodeValue; }            // 글자
+        else if(c.nodeType===1){
+          var tag=c.tagName.toLowerCase();
+          if(tag==='br'){ out+='\n'; }                      // 줄바꿈 태그
+          else{
+            var block=(tag==='div'||tag==='p');             // 줄 단위 칸막이
+            if(block && out.length && out.charAt(out.length-1)!=='\n'){ out+='\n'; }
+            walk(c);
+            if(block && out.length && out.charAt(out.length-1)!=='\n'){ out+='\n'; }
+          }
+        }
+      }
+    })(el);
+    return out;
+  }
+
   function persist(){
     var d=DIARIES[cur];
     var rec={text:d.text,savedAt:new Date().toISOString()};
@@ -237,7 +260,7 @@ function putShared(map){
   function endEdit(silent){
     editing=false;bodyEl.contentEditable='false';editBtn.classList.remove('on');editLabel.textContent='✏ 편집하기';editBanner.classList.remove('show');
     var d=DIARIES[cur];
-    var newText=bodyEl.textContent.replace(/ /g,' ').replace(/[ \t]+\n/g,'\n').trim();
+    var newText=editableToText(bodyEl).replace(/ /g,' ').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
     d.text=newText;persist();
     var n=countChars(newText);pulseCount(n);savedFlag.textContent=synced?'· 가족 모두에게 저장됨 ✓':'· 이 폰에 저장됨 ✓';
     if(!silent) showToast(synced?('💾 저장 완료! 가족 모두에게 반영됐어요 ('+n+'자)'):('💾 이 폰에 저장됐어요 ('+n+'자) · 가족에게 보내려면 📤'));
