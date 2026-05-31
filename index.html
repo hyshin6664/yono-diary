@@ -21,7 +21,13 @@ body::before{content:"";position:fixed;inset:-10%;z-index:-1;background:radial-g
 .date .weather{margin-left:8px;background:rgba(254,243,199,.9);padding:2px 12px;border-radius:999px;font-size:.85em;color:#7c2d12}
 .title{font-size:clamp(26px,4.2vw,48px);font-weight:900;color:#7c2d12;letter-spacing:-1.5px;margin-left:auto;text-shadow:2px 2px 0 rgba(255,255,255,.8),3px 3px 0 rgba(217,119,6,.15)}
 .title .emoji{margin-right:8px}
-.body{flex:1;font-size:clamp(17px,2vw,26px);line-height:1.9;color:#1c1917;font-weight:500;letter-spacing:-.3px;padding:clamp(8px,1.5vh,16px) 0;overflow:auto;display:flex;align-items:center}
+.body{flex:1;font-size:clamp(17px,2vw,26px);line-height:1.9;color:#1c1917;font-weight:500;letter-spacing:-.3px;padding:clamp(8px,1.5vh,16px) 0;overflow:auto;display:flex;align-items:center;position:relative}
+/* 형광펜(모바일 전용): 본문 위에 투명 캔버스 깔고 손/펜으로 칠하기 */
+.hl-canvas{position:absolute;left:0;top:0;z-index:5;pointer-events:none;display:none;touch-action:none;mix-blend-mode:multiply}
+.hl-canvas.on{pointer-events:auto}
+.hl-fab{display:none;position:fixed;right:16px;bottom:18px;z-index:60;width:58px;height:58px;border:none;border-radius:50%;background:linear-gradient(135deg,#7dd3fc,#38bdf8);color:#0c4a6e;font-size:24px;font-weight:900;box-shadow:0 8px 22px rgba(2,132,199,.4);cursor:pointer;align-items:center;justify-content:center;line-height:1;transition:transform .15s,box-shadow .2s}
+.hl-fab:active{transform:scale(.92)}
+.hl-fab.on{background:linear-gradient(135deg,#38bdf8,#0284c7);color:#fff;box-shadow:0 0 0 4px rgba(56,189,248,.35),0 8px 22px rgba(2,132,199,.5)}
 .body p{text-align:justify;word-break:keep-all;outline:none;border-radius:10px;padding:6px 10px;margin:-6px -10px;transition:background .25s,box-shadow .25s;width:100%;white-space:pre-wrap}
 .body p[contenteditable="true"]{background:rgba(254,240,138,.6);box-shadow:0 0 0 3px rgba(234,179,8,.4),inset 0 0 0 2px rgba(217,119,6,.3);cursor:text}
 .body p[contenteditable="true"]:focus{background:rgba(254,240,138,.85);box-shadow:0 0 0 4px rgba(234,179,8,.6)}
@@ -64,6 +70,7 @@ body::before{content:"";position:fixed;inset:-10%;z-index:-1;background:radial-g
   .btn{font-size:14px;padding:11px 16px;flex:1;justify-content:center}
   .btn-tts{flex:0 0 auto;width:48px;height:48px;font-size:18px}
   .count{font-size:14px;text-align:center}
+  .hl-fab{display:inline-flex}
 }
 </style>
 </head>
@@ -79,6 +86,7 @@ body::before{content:"";position:fixed;inset:-10%;z-index:-1;background:radial-g
   </div>
   <div class="body">
     <p id="bodyText"></p>
+    <canvas class="hl-canvas" id="hlCanvas"></canvas>
   </div>
   <div class="footer">
     <div class="count" id="countBox">✏ 본문 글자 수 (띄어쓰기 제외) : <b id="countNum">0</b>자<span class="saved-flag" id="savedFlag"></span></div>
@@ -90,6 +98,7 @@ body::before{content:"";position:fixed;inset:-10%;z-index:-1;background:radial-g
   </div>
 </div>
 <div class="toast" id="toast">✓ 저장됐어요!</div>
+<button class="hl-fab" id="hlFab" title="형광펜" aria-label="형광펜">🖍</button>
 
 <script>
 // ====== 일기 원본 (수정본은 이 폰 안에 자동 저장됨) ======
@@ -238,6 +247,7 @@ function putShared(map){
     bodyEl.textContent=d.text;
     savedFlag.textContent=d.edited?(synced?'· 가족 모두에게 저장됨 ✓':'· 이 폰에 저장됨 ✓'):'';
     pulseCount(countChars(d.text));
+    if(typeof hlOn!=='undefined'&&hlOn){ hlResize(); }  // 일기 바뀌면 형광펜 캔버스 새로 맞추기(칠한 건 초기화)
   }
 
   function buildTabs(){
@@ -297,6 +307,52 @@ function putShared(map){
     else{fallbackCopy(text,cb)}
   }
   function fallbackCopy(text,cb){var ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy')}catch(e){}ta.remove();cb()}
+
+  // ====== 형광펜 (모바일 전용) ======
+  // 모드 켜면 본문 위에 손/펜으로 연한 하늘색이 그리는 대로 칠해지고, 모드 다시 끄면 칠한 게 사라져요.
+  var hlCanvas=document.getElementById('hlCanvas'),hlFab=document.getElementById('hlFab'),
+      hlBody=hlCanvas?hlCanvas.parentNode:null,hlCtx=null,hlOn=false,hlDrawing=false;
+  function hlResize(){
+    if(!hlCanvas||!hlBody) return;
+    var w=hlBody.clientWidth, h=Math.max(hlBody.scrollHeight,hlBody.clientHeight);
+    var dpr=window.devicePixelRatio||1;
+    hlCanvas.style.width=w+'px'; hlCanvas.style.height=h+'px';
+    hlCanvas.width=Math.round(w*dpr); hlCanvas.height=Math.round(h*dpr);
+    hlCtx=hlCanvas.getContext('2d'); hlCtx.scale(dpr,dpr);
+    hlCtx.lineCap='round'; hlCtx.lineJoin='round';
+    hlCtx.strokeStyle='rgba(125,211,252,0.55)'; // 연한 하늘색
+    hlCtx.lineWidth=22;
+  }
+  function hlClear(){ if(hlCtx) hlCtx.clearRect(0,0,hlCanvas.width,hlCanvas.height); }
+  function hlPos(e){ var r=hlCanvas.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; }
+  if(hlCanvas){
+    hlCanvas.addEventListener('pointerdown',function(e){
+      if(!hlOn) return; e.preventDefault();
+      hlDrawing=true; try{hlCanvas.setPointerCapture(e.pointerId);}catch(_){}
+      var p=hlPos(e); hlCtx.beginPath(); hlCtx.moveTo(p.x,p.y); hlCtx.lineTo(p.x+0.01,p.y); hlCtx.stroke();
+    });
+    hlCanvas.addEventListener('pointermove',function(e){
+      if(!hlOn||!hlDrawing) return; e.preventDefault();
+      var p=hlPos(e); hlCtx.lineTo(p.x,p.y); hlCtx.stroke();
+    });
+    var hlEnd=function(){ hlDrawing=false; };
+    hlCanvas.addEventListener('pointerup',hlEnd);
+    hlCanvas.addEventListener('pointercancel',hlEnd);
+    hlCanvas.addEventListener('pointerleave',hlEnd);
+  }
+  function hlSetMode(on){
+    hlOn=on;
+    if(on){
+      if(editing){ endEdit(true); }                 // 편집 중이면 먼저 저장하고 형광펜 모드로
+      hlCanvas.style.display='block'; hlResize();
+      hlCanvas.classList.add('on'); hlFab.classList.add('on'); hlFab.textContent='✓';
+    }else{
+      hlClear(); hlCanvas.style.display='none';
+      hlCanvas.classList.remove('on'); hlFab.classList.remove('on'); hlFab.textContent='🖍';
+    }
+  }
+  if(hlFab){ hlFab.addEventListener('click',function(){ hlSetMode(!hlOn); }); }
+  window.addEventListener('resize',function(){ if(hlOn) hlResize(); });
 
   if(!DIARIES.length){bodyEl.textContent='일기를 불러오지 못했어요.';return}
   buildTabs();render();
