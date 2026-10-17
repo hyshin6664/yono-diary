@@ -21,7 +21,7 @@ body::before{content:"";position:fixed;inset:-10%;z-index:-1;background:radial-g
 .date .weather{margin-left:8px;background:rgba(254,243,199,.9);padding:2px 12px;border-radius:999px;font-size:.85em;color:#7c2d12}
 .title{font-size:clamp(26px,4.2vw,48px);font-weight:900;color:#7c2d12;letter-spacing:-1.5px;margin-left:auto;text-shadow:2px 2px 0 rgba(255,255,255,.8),3px 3px 0 rgba(217,119,6,.15)}
 .title .emoji{margin-right:8px}
-.body{flex:1;font-size:clamp(17px,2vw,26px);line-height:1.9;color:#1c1917;font-weight:500;letter-spacing:-.3px;padding:clamp(8px,1.5vh,16px) 0;overflow:auto;display:flex;align-items:center;position:relative}
+.body{flex:1;font-size:clamp(17px,2vw,26px);line-height:1.9;color:#1c1917;font-weight:500;letter-spacing:-.3px;padding:clamp(8px,1.5vh,16px) 0;overflow:auto;display:flex;align-items:safe center;position:relative}
 /* 형광펜(모바일 전용): 본문 위에 투명 캔버스 깔고 손/펜으로 칠하기 */
 .hl-canvas{position:absolute;left:0;top:0;z-index:5;pointer-events:none;display:none;touch-action:none;mix-blend-mode:multiply}
 .hl-canvas.on{pointer-events:auto}
@@ -237,6 +237,18 @@ function putShared(map){
     }
   }
 
+
+  // 글이 길어도 위아래가 잘리지 않게 본문 크기를 화면에 맞춤 (PC/태블릿)
+  var bodyWrap=document.querySelector('.body');
+  function fitBody(){
+    if(!bodyWrap) return;
+    bodyEl.style.fontSize='';
+    if(window.innerWidth<=640) return;
+    var fs=parseFloat(getComputedStyle(bodyEl).fontSize)||22, n=0;
+    while(bodyWrap.scrollHeight>bodyWrap.clientHeight+1 && fs>12 && n<90){ fs-=0.5; bodyEl.style.fontSize=fs+'px'; n++; }
+  }
+  window.addEventListener('resize',function(){ fitBody(); });
+
   function render(){
     var d=DIARIES[cur];
     Array.prototype.forEach.call(tabsEl.children,function(b,i){b.classList.toggle('on',i===cur)});
@@ -247,6 +259,7 @@ function putShared(map){
     bodyEl.textContent=d.text;
     savedFlag.textContent=d.edited?(synced?'· 가족 모두에게 저장됨 ✓':'· 이 폰에 저장됨 ✓'):'';
     pulseCount(countChars(d.text));
+    fitBody();
     if(typeof hlOn!=='undefined'&&hlOn){ hlResize(); }  // 일기 바뀌면 형광펜 캔버스 새로 맞추기(칠한 건 초기화)
   }
 
