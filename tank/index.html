@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>탱크 게임 고르기</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='8' y='52' width='74' height='22' rx='8' fill='%235d6b4a'/><rect x='26' y='34' width='38' height='20' rx='6' fill='%236e7d57'/><rect x='60' y='40' width='34' height='7' rx='3' fill='%236e7d57'/><circle cx='22' cy='78' r='9' fill='%23384030'/><circle cx='46' cy='78' r='9' fill='%23384030'/><circle cx='70' cy='78' r='9' fill='%23384030'/></svg>">
+<style>
+  :root{
+    --bg:#141821; --card:#1d222d; --card2:#222838; --ink:#eef1f6; --sub:#9aa5b5;
+    --line:#2c3342; --accent:#7f9b4e; --hot:#e0803a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    padding-bottom:env(safe-area-inset-bottom)}
+  header{position:sticky;top:0;z-index:30;background:rgba(20,24,33,.95);
+    backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);
+    padding:14px 16px 10px;padding-top:calc(14px + env(safe-area-inset-top))}
+  h1{margin:0;font-size:21px;letter-spacing:-.4px;display:flex;align-items:center;gap:9px}
+  h1 svg{width:30px;height:30px;flex:none}
+  .lead{margin:6px 0 0;font-size:13px;color:var(--sub);line-height:1.6}
+  .chips{display:flex;gap:7px;overflow-x:auto;padding:11px 16px 12px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);
+    font-size:13.5px;cursor:pointer;white-space:nowrap;font-family:inherit;color:var(--ink)}
+  .chip.on{background:var(--accent);color:#11150e;border-color:var(--accent);font-weight:700}
+  .count{padding:0 16px 10px;font-size:12.5px;color:var(--sub)}
+  .list{padding:0 16px 24px;display:flex;flex-direction:column;gap:11px}
+  .g{display:flex;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:17px;
+    padding:13px;cursor:pointer;align-items:flex-start;transition:transform .12s}
+  .g:active{transform:scale(.985)}
+  .g.star{border-color:#51603a;background:linear-gradient(180deg,#232a1f,#1d222d 60%)}
+  .ico{width:62px;height:62px;border-radius:15px;flex:none;object-fit:cover;background:var(--card2)}
+  .ico.pc{object-fit:cover;width:62px;height:62px}
+  .gb{min-width:0;flex:1}
+  .gn{font-size:16px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .gn .st{color:#f2c84b;font-size:14px}
+  .gs{font-size:11.5px;color:var(--sub);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tags{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+  .t{font-size:11px;padding:3px 8px;border-radius:999px;background:var(--card2);color:#c3cddc;border:1px solid var(--line)}
+  .t.team{background:#2a3a24;color:#cfe6b4;border-color:#3d5132}
+  .t.age{background:#33272a;color:#f0c6cb;border-color:#4a3338}
+  .t.free{background:#23323f;color:#b9dcf2;border-color:#32475a}
+  .gd{font-size:13px;color:#cbd4e1;margin-top:8px;line-height:1.65}
+  .rate{font-size:11.5px;color:var(--sub);margin-top:6px}
+  /* 상세 */
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(8,10,14,.82);display:none;
+    align-items:flex-start;justify-content:center;overflow-y:auto;padding:18px 14px 40px}
+  .modal.on{display:flex}
+  .sheet{background:var(--card);border:1px solid var(--line);border-radius:20px;max-width:460px;width:100%;
+    padding:17px 17px 22px;box-shadow:0 18px 50px rgba(0,0,0,.6);margin-top:env(safe-area-inset-top)}
+  .shead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .shead b{font-size:19px;letter-spacing:-.3px}
+  .x{border:none;background:var(--card2);border-radius:999px;width:33px;height:33px;font-size:17px;
+    cursor:pointer;color:#c3cddc;font-family:inherit;flex:none}
+  .shots{display:flex;gap:9px;overflow-x:auto;margin-top:13px;scrollbar-width:none;padding-bottom:3px}
+  .shots::-webkit-scrollbar{display:none}
+  .shots img{height:208px;border-radius:12px;flex:none;background:var(--card2)}
+  .shots img.wide{height:132px}
+  .box{margin-top:14px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:13px 14px}
+  .box h5{margin:0 0 5px;font-size:12px;color:var(--sub);font-weight:600}
+  .box p{margin:0;font-size:13.5px;line-height:1.7;color:#dde4ee}
+  .go{margin-top:16px;width:100%;padding:15px;border:none;border-radius:14px;background:var(--accent);
+    color:#11150e;font-size:16.5px;font-weight:700;cursor:pointer;font-family:inherit;display:block;
+    text-align:center;text-decoration:none}
+  .help{margin:4px 16px 36px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 17px}
+  .help b{font-size:14.5px}
+  .help ul{margin:9px 0 0;padding-left:19px;font-size:13.5px;color:#c3cddc;line-height:1.85}
+</style>
+</head>
+<body>
+<header>
+  <h1>
+    <svg viewBox="0 0 100 100"><rect x="8" y="52" width="74" height="22" rx="8" fill="#7f9b4e"/>
+      <rect x="26" y="34" width="38" height="20" rx="6" fill="#94ad63"/>
+      <rect x="60" y="40" width="34" height="7" rx="3" fill="#94ad63"/>
+      <circle cx="22" cy="78" r="9" fill="#4b5540"/><circle cx="46" cy="78" r="9" fill="#4b5540"/>
+      <circle cx="70" cy="78" r="9" fill="#4b5540"/></svg>
+    탱크 게임 고르기
+  </h1>
+  <p class="lead">실제 전차처럼 생긴 게임, 그중에서도 편을 나눠 같이 싸우는 것 위주로 골랐어요.
+    별표가 붙은 것부터 보면 돼요.</p>
+</header>
+
+<div class="chips" id="chips"></div>
+<div class="count" id="count"></div>
+<div class="list" id="list"></div>
+
+<div class="help">
+  <b>고르기 전에 알아 둘 것</b>
+  <ul>
+    <li><b>숫자 등급</b>은 앱스토어가 정한 나이예요. 9+는 9세부터, 12+는 12세부터 권하는 나이예요.</li>
+    <li>전부 <b>받는 건 공짜</b>지만, 게임 안에서 돈을 쓰는 항목이 있어요. 결제는 어른과 같이 정하기로 해요.</li>
+    <li><b>편 나누기</b> 칸의 「7대7」은 7명씩 두 편으로 나눠 싸운다는 뜻이에요.</li>
+    <li>별점과 평가 수는 한국 앱스토어에서 가져온 값이에요.</li>
+  </ul>
+</div>
+
+<div class="modal" id="modal">
+  <div class="sheet">
+    <div class="shead"><b id="mName"></b><button class="x" id="mClose">✕</button></div>
+    <div class="shots" id="mShots"></div>
+    <div class="box"><h5>어떤 게임이에요</h5><p id="mDesc"></p></div>
+    <div class="box"><h5>좋은 점</h5><p id="mGood"></p></div>
+    <div class="box"><h5>알아 둘 점</h5><p id="mNote"></p></div>
+    <div class="box"><h5>편 나누기</h5><p id="mTeam"></p></div>
+    <a class="go" id="mGo" target="_blank" rel="noopener">열러 가기</a>
+  </div>
+</div>
+
+<script>
+const DATA = [{"id":"859204347","name":"월드 오브 탱크 블리츠","sub":"World of Tanks Blitz™","plat":"아이폰","team":"7대7","teamSrc":"만든 회사 공식 소개 · 스팀 소개","real":3,"star":true,"price":"무료","age":"12+","rating":4.5,"cnt":10255,"icon":"https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/60/10/ec/6010ec9b-f061-27f5-fdce-e27abb9f7750/AppIcon-0-0-1x_U007emarketing-0-7-0-85-220.png/512x512bb.jpg","shots":["https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/8f/98/93/8f9893c2-6e89-47f5-ed17-e13a03ef590e/wotb_scr_03_usp_generic_ios_2688x1242_en.png/320x480bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/0e/d6/e6/0ed6e6c9-cffb-12e4-b184-83bef871d40f/wotb_scr_01_usp_generic_ios_2688x1242_en.jpg/320x480bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/3a/5d/1e/3a5d1ee6-3a52-e395-f838-0581372fc0e8/wotb_scr_02_usp_generic_ios_2688x1242_en.png/320x480bb.jpg"],"desc":"실제로 있었던 전차를 몰고 7명씩 편을 나눠 싸우는 게임이에요. 한 판이 5~7분이라 짧게 할 수 있어요.","good":"전차가 나라별로 실제 모양 그대로예요. 하는 사람이 가장 많아서 편이 금방 짜여요.","note":"전차를 올리려면 시간이 걸려요.","url":"https://apps.apple.com/kr/app/world-of-tanks-blitz/id859204347?uo=4"},{"id":"1577525428","name":"워 썬더 모바일","sub":"War Thunder Mobile - 워 썬더 모바일","plat":"아이폰","team":"팀 대 팀","teamSrc":"앱 소개에 사람 수는 안 적혀 있어요","real":3,"star":true,"price":"무료","age":"12+","rating":4.8,"cnt":3245,"icon":"https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/89/b9/9a/89b99af3-7f37-28c3-b3b1-bb03a440359a/AppIcon-0-0-1x_U007emarketing-0-11-0-85-220.png/512x512bb.jpg","shots":["https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/88/eb/97/88eb9782-dce2-a828-05ed-db4011ce7da7/bfbff648-5b54-456b-ac42-92e22af922b2_6_5_shot01.jpg/320x480bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/6b/f1/b6/6bf1b647-df21-0178-70ac-a291749d876b/air-pvp_2688x1242_00006.png/320x480bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/4c/3c/aa/4c3caae4-6498-abc3-e85d-2c009ebbfdb4/c49cf3f3-b73b-4e08-9787-412f5bc98e66_6_5_shot06.jpg/320x480bb.jpg"],"desc":"전차·배·비행기가 한 전장에서 같이 싸워요. 맞은 자리가 실제처럼 부서지는 게 특징이에요.","good":"포탄이 어디를 뚫었는지 보여 줘요. 셋 중에 하고 싶은 걸 골라 탈 수 있어요.","note":"내용이 많아서 처음엔 조금 어려워요.","url":"https://apps.apple.com/kr/app/war-thunder-mobile-%EC%9B%8C-%EC%8D%AC%EB%8D%94-%EB%AA%A8%EB%B0%94%EC%9D%BC/id1577525428?uo=4"},{"id":"1211576995","name":"탱크 포스","sub":"Tank Force: 월드 게임 오브 탱크 전쟁 배틀","plat":"아이폰","team":"7대7","teamSrc":"앱 소개에 7대7이라고 적혀 있어요","real":2,"star":true,"price":"무료","age":"9+","rating":4.1,"cnt":17,"icon":"https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/c8/90/3c/c8903c0f-49da-5786-3355-3b600411e96a/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg","shots":["https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/1a/4d/0d/1a4d0d85-03fa-567a-e32f-357369e911cf/1.png/320x480bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/3a/6e/f1/3a6ef185-e64a-34df-4f61-f92da6a34029/2.png/320x480bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/e9/94/97/e99497b3-5096-6e09-e7c0-dd2eff9fd1fb/3.png/320x480bb.jpg"],"desc":"7명씩 편을 나눠 싸우는 전차 게임이에요. 나이 등급이 9세 이상이라 가장 낮아요.","good":"조작이 쉬운 편이고 한 판이 짧아요.","note":"하는 사람이 많지 않아요.","url":"https://apps.apple.com/kr/app/tank-force-%EC%9B%94%EB%93%9C-%EA%B2%8C%EC%9E%84-%EC%98%A4%EB%B8%8C-%ED%83%B1%ED%81%AC-%EC%A0%84%EC%9F%81-%EB%B0%B0%ED%8B%80/id1211576995?uo=4"},{"id":"1058528141","name":"워 머신","sub":"War Machines：Battle Tank Games","plat":"아이폰","team":"팀 대 팀","teamSrc":"앱 소개에 사람 수는 안 적혀 있어요","real":2,"star":false,"price":"무료","age":"12+","rating":4.7,"cnt":5243,"icon":"https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/df/b7/9b/dfb79bdc-45de-8a61-d610-b134aa76a53a/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg","shots":["https://is1-ssl.mzstatic.com/image/thumb/Purple125/v4/d5/3e/19/d53e19da-f65d-a8f8-1f0e-b7b185c9eeda/tns.mldmfkig.jpg/406x228bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/Purple125/v4/78/46/d1/7846d19c-13c2-1968-c254-841a383aa0d4/tns.yqjhlyei.png/406x228bb.png","https://is1-ssl.mzstatic.com/image/thumb/Purple125/v4/38/55/75/385575b3-943a-cc14-4396-7435fc98fc47/tns.vpfhcecu.png/406x228bb.png"],"desc":"현대 전차로 편을 나눠 싸우는 3D 게임이에요.","good":"평점이 높고 하는 사람도 많아요.","note":"전차는 실제 이름이 아니에요.","url":"https://apps.apple.com/kr/app/war-machines-battle-tank-games/id1058528141?uo=4"},{"id":"1249351715","name":"매시브 워페어","sub":"Massive Warfare: 대규모 전쟁, 탱크 전투","plat":"아이폰","team":"4대4","teamSrc":"앱 소개에 4대4라고 적혀 있어요","real":2,"star":false,"price":"무료","age":"12+","rating":4.7,"cnt":1273,"icon":"https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/d3/61/78/d36178fb-41ea-7c5b-3fe8-f649376988cd/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg","shots":["https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/4b/e1/5e/4be15ec1-9ed2-f347-b41c-c86ba5a26d0a/ccb6def1-5dbf-4fcd-83c3-259a60b7a1e5_2208x1242_-_Syria_-_TRUE.png/406x228bb.png","https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/64/45/b5/6445b528-7c6e-0e96-adb9-a215d0510b02/30d5ac63-b26c-46de-9a58-41b519367447_1_-_2208x1242_-_bullet_-_gulin.png/406x228bb.png","https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/5f/92/52/5f92523b-b69e-2dd0-d3d5-f010b9c8a208/8e6770bf-344b-4445-acb7-2b0f5e1b80d4_2_-_2208x1242_-_bullet_-_merzkova.png/406x228bb.png"],"desc":"전차·헬기·배 중에 골라 편을 나눠 싸워요.","good":"탈 것이 여러 가지라 안 질려요.","note":"전차만 하고 싶으면 조금 아쉬워요.","url":"https://apps.apple.com/kr/app/massive-warfare-%EB%8C%80%EA%B7%9C%EB%AA%A8-%EC%A0%84%EC%9F%81-%ED%83%B1%ED%81%AC-%EC%A0%84%ED%88%AC/id1249351715?uo=4"},{"id":"1321874507","name":"아이언 포스 2","sub":"Iron Force 2","plat":"아이폰","team":"5대5","teamSrc":"앱 소개에 5대5라고 적혀 있어요","real":2,"star":false,"price":"무료","age":"12+","rating":4.5,"cnt":17,"icon":"https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/6d/5f/3b/6d5f3b04-9c0a-674b-bfab-fb5bf412d9ac/AppIcon-0-0-1x_U007emarketing-0-7-0-85-220.png/512x512bb.jpg","shots":["https://is1-ssl.mzstatic.com/image/thumb/PurpleSource116/v4/ce/b9/7a/ceb97ae3-1b36-2e5f-cb9f-6708f395b567/5de53c41-35f4-4d62-ad75-fa198fd9171e__U97e9_U6587.png/406x228bb.png","https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/2d/4c/93/2d4c93f5-34eb-118b-0bee-2cc5f199cc58/pr_source.jpg/406x228bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/9b/ce/90/9bce9059-1a80-3769-366a-9399040291c3/pr_source.jpg/406x228bb.jpg"],"desc":"5명씩 분대를 짜서 싸우는 전차 게임이에요.","good":"친구와 같은 편으로 들어갈 수 있어요.","note":"아직 평가한 사람이 적어요.","url":"https://apps.apple.com/kr/app/iron-force-2/id1321874507?uo=4"},{"id":"606190854","name":"아이언 포스","sub":"Iron Force","plat":"아이폰","team":"팀 대 팀","teamSrc":"앱 소개에 「팀 기반 소전투」라고 적혀 있어요","real":2,"star":false,"price":"무료","age":"12+","rating":4.3,"cnt":146,"icon":"https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/73/f8/e6/73f8e6fe-3f7a-c5c5-6cde-792c7f9d1911/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/512x512bb.jpg","shots":["https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/13/30/28/13302828-82e0-d50f-5be8-0e046b59778b/IOS_5.5_U82f1_U5bf8-2208x1242.png/406x228bb.png","https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/a1/78/23/a17823fa-4346-4ff8-41fe-2e1c2144e263/4d568637-e378-421b-9aad-534d5bd4da93_Korean.png/406x228bb.png","https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/84/ba/ef/84baef34-3110-2055-cdbb-8bad1adcfe52/mzl.vfrjsmmm.png/406x228bb.png"],"desc":"위 게임의 먼저 나온 판이에요. 전차로 편을 나눠 싸워요.","good":"오래된 만큼 안정적이에요.","note":"그림이 요즘 게임보다 수수해요.","url":"https://apps.apple.com/kr/app/iron-force/id606190854?uo=4"},{"id":"1424143668","name":"탱크 컴뱃: 팀 포스","sub":"Tank Combat: Team Force","plat":"아이폰","team":"3대3","teamSrc":"앱 소개에 3대3이라고 적혀 있어요","real":2,"star":false,"price":"무료","age":"12+","rating":3.7,"cnt":3,"icon":"https://is1-ssl.mzstatic.com/image/thumb/Purple128/v4/52/9b/81/529b81d7-e1f4-5dd3-bd56-ca4b0e1b6500/AppIcon-0-1x_U007emarketing-0-85-220-9.png/512x512bb.jpg","shots":["https://is1-ssl.mzstatic.com/image/thumb/Purple118/v4/df/3b/6e/df3b6e65-f108-a413-5a19-ea8bb01374dd/pr_source.jpg/406x228bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/Purple118/v4/d4/fc/de/d4fcdefe-f0c6-b5eb-39ba-31c2d906e84e/pr_source.jpg/406x228bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/Purple128/v4/d1/09/a1/d109a108-23d9-3a68-7a3c-b0decc273826/pr_source.jpg/406x228bb.jpg"],"desc":"3명씩 편을 나눠 싸우는 전차 게임이에요.","good":"사람이 적어도 판이 빨리 열려요.","note":"평가한 사람이 아주 적어요.","url":"https://apps.apple.com/kr/app/tank-combat-team-force/id1424143668?uo=4"},{"id":"1164815902","name":"아머 에이지","sub":"Armor Age: Tank Wars","plat":"아이폰","team":"혼자","teamSrc":"편을 나눠 싸우는 방식이 아니에요","real":2,"star":false,"price":"무료","age":"4+","rating":4.6,"cnt":289,"icon":"https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/63/64/b1/6364b176-3f79-e40f-1586-cf19d4458086/AppIcon-0-0-1x_U007emarketing-0-6-85-220.png/512x512bb.jpg","shots":["https://is1-ssl.mzstatic.com/image/thumb/Purple123/v4/6a/41/be/6a41bea1-aee1-c495-6e3f-e52bb2b9bd22/pr_source.jpg/406x228bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/Purple123/v4/83/e0/b9/83e0b9ee-edec-a509-812f-a4c0b8567360/pr_source.jpg/406x228bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/Purple113/v4/cf/0b/37/cf0b3703-ce40-81d2-70f0-23eecae9a5aa/pr_source.jpg/406x228bb.jpg"],"desc":"전차 다섯 대를 골라 부대를 만들고 작전을 지휘하는 게임이에요.","good":"나이 등급이 4세 이상이라 가장 낮아요.","note":"편을 나눠 겨루는 게임은 아니에요.","url":"https://apps.apple.com/kr/app/armor-age-tank-wars/id1164815902?uo=4"},{"id":"1538549030","name":"탱크 워페어","sub":"Tank Warfare: PvP 전차 블리츠","plat":"아이폰","team":"팀 대 팀","teamSrc":"앱 소개에 사람 수는 안 적혀 있어요","real":2,"star":false,"price":"무료","age":"17+","rating":4.5,"cnt":73,"icon":"https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/3e/dc/e7/3edce770-3008-bc37-361d-d7b25122bf88/AppIcon-1x_U007emarketing-0-8-0-85-220-0.png/512x512bb.jpg","shots":["https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/91/a5/1a/91a51a19-c867-fab2-9c19-9a8a8fa48b56/2208x1242.jpg/406x228bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/9b/db/fd/9bdbfdfb-352d-b3da-b0cf-d3a3ba77cf1b/_U00282208_U00d71242_U0029-1.jpg/406x228bb.jpg","https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/a0/a4/d7/a0a4d7cc-c65b-7dda-69e0-9f4255700a05/KR-_U00282208X1242_U0029-4.jpg/406x228bb.jpg"],"desc":"실시간으로 전차를 몰고 겨루는 게임이에요.","good":"전투 장면이 꽤 사실적이에요.","note":"나이 등급이 17세 이상이에요.","url":"https://apps.apple.com/kr/app/tank-warfare-pvp-%EC%A0%84%EC%B0%A8-%EB%B8%94%EB%A6%AC%EC%B8%A0/id1538549030?uo=4"},{"id":"pc-wot","name":"월드 오브 탱크 (컴퓨터)","team":"15대15","teamSrc":"만든 회사 공식 설명 (랜덤 전투)","real":3,"star":true,"price":"무료","age":"-","rating":null,"cnt":null,"desc":"컴퓨터로 하는 큰 판이에요. 15명씩 편을 나눠 싸워요. 전차 종류가 아주 많아요.","good":"실제 전차를 가장 많이 다뤄요.","note":"컴퓨터가 있어야 해요.","url":"https://worldoftanks.asia/","icon":null,"shots":["https://cdn.akamai.steamstatic.com/steam/apps/444200/header.jpg"],"plat":"컴퓨터","sub":""},{"id":"pc-wt","name":"워 썬더 (컴퓨터)","team":"팀 대 팀","teamSrc":"공식 쪽에서 사람 수를 확인하지 못했어요","real":3,"star":true,"price":"무료","age":"-","rating":null,"cnt":null,"desc":"전차·비행기·배를 모두 몰 수 있어요. 가장 사실적인 축에 들어요.","good":"포탄이 어디를 뚫는지까지 계산해요.","note":"배울 게 많아요.","url":"https://store.steampowered.com/app/236390/","icon":null,"shots":["https://cdn.akamai.steamstatic.com/steam/apps/236390/header.jpg"],"plat":"컴퓨터","sub":""},{"id":"pc-enl","name":"엔리스티드 (컴퓨터)","team":"팀 대 팀","teamSrc":"공식 쪽에서 사람 수를 확인하지 못했어요","real":3,"star":false,"price":"무료","age":"-","rating":null,"cnt":null,"desc":"2차 세계대전 전장에서 분대를 이끌고 싸워요. 전차도 탈 수 있어요.","good":"전차와 보병이 같이 나와요.","note":"전차만 타는 게임은 아니에요.","url":"https://store.steampowered.com/app/2051620/","icon":null,"shots":["https://cdn.akamai.steamstatic.com/steam/apps/2051620/header.jpg"],"plat":"컴퓨터","sub":""}];
+const FILTERS = [
+  {k:'all',  label:'전체'},
+  {k:'star', label:'★ 먼저 볼 것'},
+  {k:'team', label:'편 나눠 싸우기'},
+  {k:'ios',  label:'아이폰'},
+  {k:'pc',   label:'컴퓨터'},
+  {k:'low',  label:'나이 낮은 것'},
+];
+let cur = 'all';
+
+const chips = document.getElementById('chips');
+FILTERS.forEach(f=>{
+  const b = document.createElement('button');
+  b.className = 'chip' + (f.k==='all'?' on':''); b.textContent = f.label;
+  b.onclick = ()=>{ cur = f.k; [...chips.children].forEach(c=>c.classList.remove('on'));
+                    b.classList.add('on'); render(); };
+  chips.appendChild(b);
+});
+
+function ageNum(a){ const m = (a||'').match(/\d+/); return m ? +m[0] : 99; }
+function pass(g){
+  if(cur==='star') return !!g.star;
+  if(cur==='team') return g.team !== '혼자';
+  if(cur==='ios')  return g.plat === '아이폰';
+  if(cur==='pc')   return g.plat === '컴퓨터';
+  if(cur==='low')  return ageNum(g.age) <= 9;
+  return true;
+}
+
+const list = document.getElementById('list');
+function render(){
+  const rows = DATA.filter(pass)
+    .sort((a,b)=> (b.star?1:0)-(a.star?1:0) || (b.cnt||0)-(a.cnt||0));
+  document.getElementById('count').textContent = `${rows.length}가지`;
+  list.innerHTML = '';
+  rows.forEach(g=>{
+    const el = document.createElement('div');
+    el.className = 'g' + (g.star ? ' star' : '');
+    const icon = g.icon
+      ? `<img class="ico" src="${g.icon}" alt="">`
+      : `<img class="ico pc" src="${(g.shots||[])[0]||''}" alt="">`;
+    const rate = (g.rating!=null)
+      ? `별점 ${g.rating} · 평가 ${(g.cnt||0).toLocaleString()}명`
+      : '앱스토어 밖이라 별점은 없어요';
+    el.innerHTML = `${icon}
+      <div class="gb">
+        <div class="gn">${g.star?'<span class="st">★</span>':''}${g.name}</div>
+        ${g.sub?`<div class="gs">${g.sub}</div>`:''}
+        <div class="tags">
+          <span class="t team">${g.team}</span>
+          <span class="t">${g.plat}</span>
+          ${g.age && g.age!=='-' ? `<span class="t age">${g.age}</span>` : ''}
+          <span class="t free">${g.price||'무료'}</span>
+        </div>
+        <div class="gd">${g.desc}</div>
+        <div class="rate">${rate}</div>
+      </div>`;
+    el.onclick = ()=>openOne(g);
+    list.appendChild(el);
+  });
+}
+
+const modal = document.getElementById('modal');
+document.getElementById('mClose').onclick = ()=>modal.classList.remove('on');
+modal.onclick = e=>{ if(e.target===modal) modal.classList.remove('on'); };
+
+function openOne(g){
+  document.getElementById('mName').textContent = g.name;
+  document.getElementById('mDesc').textContent = g.desc;
+  document.getElementById('mGood').textContent = g.good;
+  document.getElementById('mNote').textContent = g.note;
+  document.getElementById('mTeam').textContent = `${g.team} · ${g.teamSrc}`;
+  const go = document.getElementById('mGo');
+  go.href = g.url;
+  go.textContent = g.plat==='아이폰' ? '앱스토어에서 보기' : '게임 쪽 열어 보기';
+  const sh = document.getElementById('mShots');
+  sh.innerHTML = (g.shots||[]).map(s=>
+    `<img class="${g.plat==='컴퓨터'?'wide':''}" src="${s}" alt="" loading="lazy">`).join('');
+  modal.classList.add('on');
+}
+
+render();
+</script>
+</body>
+</html>
