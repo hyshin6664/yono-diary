@@ -59,13 +59,52 @@
   .shead b{font-size:18px}
   .x{border:none;background:#eef1f6;border-radius:999px;width:32px;height:32px;font-size:17px;
     cursor:pointer;color:#555;font-family:inherit}
-  .phone{margin:13px auto 0;width:186px;aspect-ratio:9/19.5;border-radius:26px;overflow:hidden;
+  .phone{margin:13px auto 0;width:200px;aspect-ratio:9/19.5;border-radius:27px;overflow:hidden;
     border:4px solid #1b1f27;background:#000;position:relative}
   .phone canvas{width:100%;height:100%;display:block}
-  .live{position:absolute;left:0;right:0;bottom:0;top:0;pointer-events:none}
-  .live img{position:absolute;left:50%;transform:translate(-50%,-50%);display:none}
-  .live img.on{display:block}
-  .live img.dot{image-rendering:pixelated}
+  /* 포켓몬은 캔버스 위에 그림 한 겹으로만 — 두 겹으로 겹치면 잔상처럼 보인다 */
+  .live{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  .slot{position:absolute}
+  .slot img{display:block;width:100%}
+  .slot img.px{image-rendering:pixelated}
+  #slotRef{display:none;opacity:.20;transform:scaleY(-1);
+    -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,0) 22%,rgba(0,0,0,.95));
+    mask-image:linear-gradient(to bottom,rgba(0,0,0,0) 22%,rgba(0,0,0,.95))}
+  #slotRef.on{display:block}
+  /* 움직임 더하기 — 원래 움직임이 작은 포켓몬도 확실히 움직이게 */
+  @keyframes fxFloat{0%,100%{transform:translateY(0) scale(1)}
+                     50%{transform:translateY(-5.5%) scale(1.025)}}
+  @keyframes fxBounce{0%{transform:translateY(0) scale(1,1)}
+                      16%{transform:translateY(-13%) scale(.97,1.05)}
+                      36%{transform:translateY(0) scale(1.05,.94)}
+                      50%{transform:translateY(0) scale(1,1)}
+                      64%{transform:translateY(-4%) scale(.99,1.02)}
+                      80%{transform:translateY(0) scale(1.02,.98)}
+                      100%{transform:translateY(0) scale(1,1)}}
+  @keyframes fxSway{0%,100%{transform:rotate(-5.5deg) translateY(0)}
+                    50%{transform:rotate(5.5deg) translateY(-2%)}}
+  @keyframes fxSpin{0%{transform:perspective(620px) rotateY(-30deg) translateY(0)}
+                    50%{transform:perspective(620px) rotateY(30deg) translateY(-3%)}
+                    100%{transform:perspective(620px) rotateY(-30deg) translateY(0)}}
+  @keyframes fxBig{0%{transform:translate(-6%,0) rotate(-9deg) scale(1,1)}
+                   12%{transform:translate(-5%,-12%) rotate(-6deg) scale(.95,1.07)}
+                   25%{transform:translate(0,-21%) rotate(0deg) scale(1.03,.97)}
+                   38%{transform:translate(5%,-12%) rotate(6deg) scale(.95,1.07)}
+                   50%{transform:translate(6%,0) rotate(9deg) scale(1.07,.93)}
+                   62%{transform:translate(5%,-12%) rotate(6deg) scale(.95,1.07)}
+                   75%{transform:translate(0,-21%) rotate(0deg) scale(1.03,.97)}
+                   88%{transform:translate(-5%,-12%) rotate(-6deg) scale(.95,1.07)}
+                   100%{transform:translate(-6%,0) rotate(-9deg) scale(1,1)}}
+  @keyframes fxJump{0%,58%,100%{transform:translateY(0) scale(1,1)}
+                    12%{transform:translateY(-2%) scale(1.07,.9)}
+                    30%{transform:translateY(-26%) scale(.94,1.09)}
+                    46%{transform:translateY(0) scale(1.06,.92)}}
+  .fxFloat{animation:fxFloat 2.7s ease-in-out infinite}
+  .fxBounce{animation:fxBounce 1.25s ease-in-out infinite}
+  .fxSway{animation:fxSway 2.1s ease-in-out infinite}
+  .fxSpin{animation:fxSpin 4.6s ease-in-out infinite}
+  .fxJump{animation:fxJump 1.9s cubic-bezier(.3,0,.4,1) infinite}
+  .fxBig{animation:fxBig 3.2s ease-in-out infinite}
   .opt{margin-top:14px}
   .opt h4{margin:0 0 7px;font-size:13px;color:var(--sub);font-weight:600}
   .row{display:flex;gap:7px;flex-wrap:wrap}
@@ -77,10 +116,12 @@
   .seg button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
   .kinds{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
   .kinds::-webkit-scrollbar{display:none}
+  #fxRow{flex-wrap:wrap;overflow-x:visible}
   .kinds button{flex:none;padding:9px 13px;border-radius:11px;border:1px solid var(--line);background:#fff;
     font-size:13.5px;cursor:pointer;font-family:inherit;color:var(--ink);white-space:nowrap}
   .kinds button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-  .kinds button.mvb.on{background:linear-gradient(135deg,#6a52e8,#ee4b4b);border-color:transparent}
+  .kinds button.mvb.on,.seg button.mvb.on{background:linear-gradient(135deg,#6a52e8,#ee4b4b);
+    border-color:transparent;color:#fff}
   .save{margin-top:16px;width:100%;padding:15px;border:none;border-radius:14px;background:var(--accent);
     color:#fff;font-size:16.5px;font-weight:700;cursor:pointer;font-family:inherit}
   .mv{margin-top:8px;width:100%;padding:13px;border:none;border-radius:13px;
@@ -132,7 +173,7 @@
   <b>아이폰에 넣는 방법</b>
   <ol>
     <li>포켓몬을 고르고 <b>그림 종류</b>와 <b>배경 색</b>, <b>잠금화면 / 홈화면</b>을 정해요.</li>
-    <li><b>배경화면 만들기</b>를 누르면 큰 그림이 나와요.</li>
+    <li><b>배경화면 만들기</b>를 누르면 큰 그림이 나와요. 움직이는 그림을 골랐다면 <b>그 순간의 모습</b>이 담겨요.</li>
     <li>그림을 <b>꾹 누르고</b> 「사진에 추가」를 눌러 저장해요.</li>
     <li>아이폰 <b>설정 → 배경화면 → 새로운 배경화면 추가 → 사진</b>에서 방금 저장한 그림을 고르면 끝이에요.</li>
   </ol>
@@ -142,7 +183,10 @@
   <b>✨ 움직이는 포켓몬</b>
   <ul>
     <li>위의 <b>✨ 움직이게</b>를 누르면 목록의 포켓몬들이 전부 움직여요.</li>
-    <li>포켓몬을 고른 뒤 <b>그림 종류</b>에서 <b>✨ 움직임</b>이나 <b>✨ 도트 움직임</b>을 고르면, 휴대폰 미리보기 안에서 춤추는 걸 볼 수 있어요.</li>
+    <li>포켓몬을 고른 뒤 <b>그림 종류</b>에서 <b>✨ 움직임</b>을 고르면 미리보기 안에서 춤춰요.</li>
+    <li>포켓몬마다 원래 움직임이 큰 것과 거의 없는 것이 있어요. 그래서 <b>움직임 더하기</b>를 처음부터
+      <b>통통</b>으로 켜 뒀어요. 제크로무처럼 조금만 움직이는 포켓몬도 확실히 움직여요.</li>
+    <li><b>폴짝 · 빙글빙글 · 살랑살랑</b>도 눌러 보세요. 움직임이 싫으면 <b>없이</b>를 고르면 돼요.</li>
     <li>움직이는 그림을 사진으로 가지고 싶으면 <b>✨ 움직이는 그림 저장</b>을 누르고 꾹 눌러 저장해요. <b>사진 앱에서는 움직여요.</b></li>
     <li>다만 <b>아이폰 배경화면에 넣으면 멈춰요.</b> 아이폰은 배경화면에 쓴 그림을 한 장면으로 바꾸기 때문이에요. 그래서 배경은 멋진 한 장면으로 만드는 게 가장 깨끗해요.</li>
     <li>아이폰이 스스로 움직여 주는 배경은 <b>설정 → 배경화면 → 날씨 / 천문학</b> 두 가지예요. 포켓몬은 없어요.</li>
@@ -152,8 +196,10 @@
 <div class="help mvhelp">
   <b>🧊 3D 배경화면</b>
   <ul>
-    <li>그림 종류에서 <b>3D 그림</b>을 고르면 게임 속 입체 모습이 나와요.</li>
-    <li>배경 모양을 <b>✨ 3D 입체</b>로 바꾸면 바닥이 생기고, 포켓몬이 바닥에 비치고 그림자도 깔려요.</li>
+    <li>처음부터 <b>✨ 3D 입체</b>로 켜져 있어요. 둥근 무대가 깔리고, 포켓몬 뒤에 빛이 번지고,
+      바닥에 비친 모습과 그림자까지 같이 움직여요.</li>
+    <li>그림 종류에서 <b>3D 그림</b>을 고르면 게임 속 입체 모습이 나와요.
+      <b>움직임 더하기 → 빙글빙글</b>과 같이 쓰면 포켓몬이 좌우로 돌아가며 입체로 보여요.</li>
     <li><b>✨ 시계 앞으로</b>를 고르면 포켓몬을 위쪽에 크게 그려요. 아이폰 잠금화면에 넣고 <b>사용자화 → 사진</b>에서 포켓몬을 조금 키우면, 포켓몬이 <b>시계 앞으로 튀어나와 보여요</b>(아이폰 깊이 효과).</li>
     <li>깊이 효과가 안 켜지면 포켓몬을 조금 더 키우거나 위로 올려 보세요. 시계를 너무 많이 가리면 아이폰이 효과를 꺼요.</li>
   </ul>
@@ -164,15 +210,19 @@
     <div class="shead"><b id="mName">피카츄</b><button class="x" id="mClose">✕</button></div>
     <div class="phone">
       <canvas id="cv" width="1290" height="2796"></canvas>
-      <div class="live" id="live"><img id="liveImg" alt=""></div>
+      <div class="live" id="live">
+        <div class="slot" id="slotRef"><img id="refImg" crossorigin="anonymous" alt=""></div>
+        <div class="slot" id="slotMain"><img id="liveImg" crossorigin="anonymous" alt=""></div>
+      </div>
     </div>
 
     <div class="opt"><h4>그림 종류</h4><div class="kinds" id="kindRow"></div></div>
+    <div class="opt"><h4>움직임 더하기</h4><div class="kinds" id="fxRow"></div></div>
     <div class="opt"><h4>배경 색</h4><div class="row" id="bgRow"></div></div>
     <div class="opt"><h4>배경 모양</h4>
       <div class="seg" id="d3Seg">
-        <button data-d3="0" class="on">평면</button>
-        <button data-d3="1">✨ 3D 입체</button>
+        <button data-d3="0">평면</button>
+        <button data-d3="1" class="mvb on">✨ 3D 입체</button>
       </div>
     </div>
     <div class="opt"><h4>어디에 쓸까요</h4>
@@ -207,7 +257,7 @@ const DATA = [{"id":1,"ko":"이상해씨","types":["풀","독"],"colors":["#62BB
 const TYPE_COLOR = {"normal":"#9FA19F","fire":"#F08030","water":"#4F8FD6","electric":"#F6C844","grass":"#62BB5A","ice":"#76D0C8","fighting":"#C03028","poison":"#9B59B6","ground":"#D8A857","flying":"#8CA7E8","psychic":"#F05A8B","bug":"#9BBA2C","rock":"#B8A038","ghost":"#6C5A9B","dragon":"#6A52E8","dark":"#5A5048","steel":"#A8A8C0","fairy":"#EE9AC4"};
 const BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon';
 
-/* 그림 종류 — mv=움직임, dot=도트(크게 볼 때 네모 선명하게) */
+/* 그림 종류 — mv=움직이는 그림 */
 const KINDS = {
   art:  {label:'멋진 그림', mv:false, dot:false, url:id=>`${BASE}/other/official-artwork/${id}.png`},
   home: {label:'3D 그림',   mv:false, dot:false, url:id=>`${BASE}/other/home/${id}.png`},
@@ -216,32 +266,42 @@ const KINDS = {
   bdsp: {label:'✨ 움직임', mv:true,  dot:false, url:id=>`${BASE}/versions/generation-viii/brilliant-diamond-shining-pearl/${id}.webp`},
   arc:  {label:'✨ 움직임2',mv:true,  dot:false, url:id=>`${BASE}/versions/generation-viii/legends-arceus/${id}.webp`},
   champ:{label:'✨ 움직임3',mv:true,  dot:false, url:id=>`${BASE}/versions/generation-ix/champions/${id}.webp`},
-  dot:  {label:'✨ 도트 움직임', mv:true, dot:true, url:id=>`${BASE}/versions/generation-v/black-white/animated/${id}.gif`},
-  show: {label:'✨ 작은 움직임', mv:true, dot:true, url:id=>`${BASE}/other/showdown/${id}.gif`},
 };
 /* 한 마리가 실제로 쓸 수 있는 종류만, 보기 좋은 순서로 */
 function kindsOf(d){
-  const out = ['art'];
-  if(d.home) out.push('home');
+  const out = [];
   const big = ['sv','ss','bdsp'].filter(k=>d.anim.includes(k));
   if(big.length) out.push(big[0]);
   ['arc','champ'].forEach(k=>{ if(d.anim.includes(k)) out.push(k); });
-  if(d.anim.includes('dot')) out.push('dot');
-  if(d.anim.includes('show')) out.push('show');
+  if(d.home) out.push('home');
+  out.push('art');
   return out;
 }
-/* 목록에서 움직이게 볼 때 쓰는 그림 — 가볍고 전부 있는 것 */
-const listSrc = d => (d.anim.includes('show') ? KINDS.show.url(d.id)
-                    : d.anim.includes('dot')  ? KINDS.dot.url(d.id)
-                    : KINDS.art.url(d.id));
+/* 움직임 더하기 */
+const FXS = [
+  {k:'none',   label:'없이'},
+  {k:'fxFloat',label:'둥실둥실'},
+  {k:'fxBounce',label:'통통'},
+  {k:'fxJump', label:'폴짝'},
+  {k:'fxSway', label:'살랑살랑'},
+  {k:'fxSpin', label:'빙글빙글'},
+  {k:'fxBig',  label:'크게 날기'},
+];
+/* 목록에서 움직이게 볼 때 쓰는 그림 — 움직임이 큰 것부터 */
+const listSrc = d => { const k = ['sv','ss','bdsp','arc','champ'].find(x=>d.anim.includes(x));
+                       return k ? KINDS[k].url(d.id) : KINDS.art.url(d.id); };
 
 try{ ['Fav','Anim'].forEach(k=>{ const v = localStorage.getItem('yono'+k);
   if(v!==null){ if(localStorage.getItem('poke'+k)===null) localStorage.setItem('poke'+k, v);
                 localStorage.removeItem('yono'+k); } }); }catch(e){}
+const saved = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
+const keep = (k,v) => { try{ localStorage.setItem(k,v); }catch(e){} };
 
-let state = {fav:new Set(JSON.parse(localStorage.getItem('pokeFav')||'[]')),
+let state = {fav:new Set(JSON.parse(saved('pokeFav')||'[]')),
              favOnly:false, type:'전체', q:'', cur:null, bg:'type', use:'lock', name:0,
-             animList:localStorage.getItem('pokeAnim')==='1', kind:'art', d3:0};
+             animList:saved('pokeAnim')==='1', kind:null,
+             d3:saved('pokeD3')==='0' ? 0 : 1,
+             fx:saved('pokeFx') || 'fxBig'};
 
 const BGS = [
   {k:'type',  label:'포켓몬 색'},
@@ -275,7 +335,7 @@ const animAll = document.getElementById('animAll');
 animAll.classList.toggle('on', state.animList);
 animAll.onclick = ()=>{
   state.animList = !state.animList;
-  localStorage.setItem('pokeAnim', state.animList ? '1' : '0');
+  keep('pokeAnim', state.animList ? '1' : '0');
   animAll.classList.toggle('on', state.animList);
   render();
 };
@@ -292,14 +352,14 @@ function render(){
     const src = state.animList ? listSrc(d) : KINDS.art.url(d.id);
     const c = document.createElement('div'); c.className='card';
     c.innerHTML = `<span class="fav${state.fav.has(d.id)?' on':''}">★</span>
-      <img loading="lazy" class="${state.animList?'dot':''}" src="${src}" alt="${d.ko}"
-           onerror="this.onerror=null;this.classList.remove('dot');this.src='${KINDS.art.url(d.id)}'">
+      <img loading="lazy" src="${src}" alt="${d.ko}"
+           onerror="this.onerror=null;this.src='${KINDS.art.url(d.id)}'">
       <div class="nm">${d.ko}</div><div class="no">도감 ${d.id}</div>
       <div class="tp">${d.types.map((t,i)=>`<span style="background:${d.colors[i]}">${t}</span>`).join('')}</div>`;
     c.querySelector('.fav').onclick = ev=>{
       ev.stopPropagation();
       state.fav.has(d.id) ? state.fav.delete(d.id) : state.fav.add(d.id);
-      localStorage.setItem('pokeFav', JSON.stringify([...state.fav]));
+      keep('pokeFav', JSON.stringify([...state.fav]));
       render();
     };
     c.onclick = ()=>openOne(d);
@@ -312,9 +372,12 @@ const modal = document.getElementById('modal');
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 const bgRow = document.getElementById('bgRow');
 const kindRow = document.getElementById('kindRow');
+const fxRow = document.getElementById('fxRow');
 const liveImg = document.getElementById('liveImg');
+const refImg = document.getElementById('refImg');
+const slotMain = document.getElementById('slotMain');
+const slotRef = document.getElementById('slotRef');
 const mvSave = document.getElementById('mvSave');
-let curImg = null;
 
 BGS.forEach(b=>{
   const s = document.createElement('div');
@@ -326,6 +389,16 @@ BGS.forEach(b=>{
                     s.classList.add('on'); draw(); };
   bgRow.appendChild(s);
 });
+FXS.forEach(f=>{
+  const b = document.createElement('button');
+  b.textContent = f.label; b.dataset.fx = f.k;
+  b.className = (f.k==='none' ? '' : 'mvb ') + (f.k===state.fx ? 'on' : '');
+  b.onclick = ()=>{ state.fx = f.k; keep('pokeFx', f.k); markFx(); applyFx(); };
+  fxRow.appendChild(b);
+});
+function markFx(){
+  [...fxRow.children].forEach(x=>x.classList.toggle('on', x.dataset.fx===state.fx));
+}
 document.querySelectorAll('#useSeg button').forEach(b=>b.onclick=()=>{
   state.use=b.dataset.use;
   document.querySelectorAll('#useSeg button').forEach(x=>x.classList.remove('on'));
@@ -336,19 +409,22 @@ document.querySelectorAll('#nameSeg button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#nameSeg button').forEach(x=>x.classList.remove('on'));
   b.classList.add('on'); draw();
 });
-document.querySelectorAll('#d3Seg button').forEach(b=>b.onclick=()=>{
-  state.d3=+b.dataset.d3;
-  document.querySelectorAll('#d3Seg button').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on'); draw();
+document.querySelectorAll('#d3Seg button').forEach(b=>{
+  b.classList.toggle('on', +b.dataset.d3 === state.d3);
+  b.onclick=()=>{
+    state.d3=+b.dataset.d3; keep('pokeD3', String(state.d3));
+    document.querySelectorAll('#d3Seg button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); draw();
+  };
 });
 document.getElementById('mClose').onclick = ()=>closeOne();
 modal.onclick = e=>{ if(e.target===modal) closeOne(); };
-function closeOne(){ modal.classList.remove('on'); liveImg.classList.remove('on'); }
+function closeOne(){ modal.classList.remove('on'); }
 
 function buildKinds(d){
   kindRow.innerHTML = '';
   const avail = kindsOf(d);
-  if(!avail.includes(state.kind)) state.kind = 'art';
+  if(!avail.includes(state.kind)) state.kind = avail[0];
   avail.forEach(k=>{
     const K = KINDS[k];
     const b = document.createElement('button');
@@ -368,39 +444,92 @@ function openOne(d){
   loadPic();
 }
 
+function applyFx(){
+  const px = KINDS[state.kind] && KINDS[state.kind].dot ? ' px' : '';
+  const cls = (state.fx==='none' ? '' : state.fx) + px;
+  liveImg.className = cls.trim();
+  refImg.className = cls.trim();
+}
+
 function loadPic(){
   const d = state.cur, K = KINDS[state.kind];
   const url = K.url(d.id);
   mvSave.classList.toggle('show', K.mv);
-  /* 움직이는 종류면 미리보기 위에 실제로 움직이는 그림을 겹쳐 보여 준다 */
-  if(K.mv){
-    liveImg.className = K.dot ? 'dot on' : 'on';
-    liveImg.src = url;
-    placeLive();
-  } else {
-    liveImg.classList.remove('on');
-    liveImg.removeAttribute('src');
-  }
-  curImg = new Image(); curImg.crossOrigin = 'anonymous';
-  curImg.onload = draw;
-  curImg.onerror = ()=>{ curImg=null; draw(); };
-  curImg.src = url;
+  applyFx();
+  liveImg.onload = ()=>draw();
+  liveImg.onerror = ()=>{
+    if(state.kind !== 'art'){ state.kind = 'art'; buildKinds(d); loadPic(); }
+  };
+  if(liveImg.src !== url){ liveImg.src = url; refImg.src = url; }
+  else if(liveImg.complete) draw();
+  placeSlots();
   draw();
 }
 
-/* 포켓몬을 어디에 얼마나 크게 둘지 — 화면 너비 1, 높이 1 기준 */
+/* 포켓몬 크기(화면 너비 기준)와 발이 닿는 높이 */
 function layout(){
-  if(state.use==='depth') return {box:1.04, cy:0.385};   /* 시계 앞으로 올라오게 위쪽에 크게 */
-  if(state.use==='lock')  return {box:0.86, cy:0.645};
-  return {box:0.80, cy:0.50};
+  if(state.use==='depth') return {box:0.92, foot:0.575};  /* 시계 앞으로 올라오게 위쪽에 크게 */
+  if(state.use==='lock')  return {box:0.74, foot:0.775};
+  return {box:0.66, foot:0.650};
 }
 
-function placeLive(){
-  const L = layout();
-  liveImg.style.width = (L.box*100) + '%';
-  liveImg.style.left = '50%';
-  liveImg.style.top = (L.cy*100) + '%';
-  liveImg.style.filter = 'drop-shadow(0 6px 10px rgba(0,0,0,.28))';
+/* 그림 파일 안에서 포켓몬이 실제로 차지하는 자리 — 종류마다 여백이 달라 직접 잰다 */
+const bbCache = new Map();
+const BB_DEF = {x:.08, y:.08, w:.84, h:.84};
+function measure(img){
+  const key = img.currentSrc || img.src;
+  if(bbCache.has(key)) return bbCache.get(key);
+  let bb = null;
+  try{
+    const n = 100;
+    const c = document.createElement('canvas'); c.width = n; c.height = n;
+    const g = c.getContext('2d', {willReadFrequently:true});
+    g.drawImage(img, 0, 0, n, n);
+    const dat = g.getImageData(0,0,n,n).data;
+    let x0=n, y0=n, x1=-1, y1=-1;
+    for(let y=0;y<n;y++){ for(let x=0;x<n;x++){
+      if(dat[(y*n+x)*4+3] > 16){
+        if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y;
+      }
+    }}
+    if(x1>=0) bb = {x:x0/n, y:y0/n, w:(x1-x0+1)/n, h:(y1-y0+1)/n};
+  }catch(e){}
+  if(bb) bbCache.set(key, bb);
+  return bb;
+}
+
+/* 캔버스 픽셀 기준 자리 — 발이 바닥에 닿고, 몸 크기가 지정한 만큼 되게 */
+function geom(){
+  const W = cv.width, H = cv.height, L = layout();
+  const ok = liveImg.complete && liveImg.naturalWidth;
+  const bb = (ok && measure(liveImg)) || BB_DEF;
+  const ratio = ok ? liveImg.naturalWidth/liveImg.naturalHeight : 1;
+  const target = W*L.box;
+  const sh = target / Math.max(bb.w*ratio, bb.h);     /* 그림 전체 높이 */
+  const sw = sh*ratio;                                /* 그림 전체 너비 */
+  const footY = H*L.foot;
+  const x = W/2 - sw*(bb.x + bb.w/2);
+  const y = footY - sh*(bb.y + bb.h);
+  return {W, H, x, y, sw, sh, bb, footY, cx:W/2,
+          pw:sw*bb.w, ph:sh*bb.h};                    /* pw·ph = 포켓몬 실제 크기 */
+}
+
+function placeSlots(){
+  const G = geom();
+  const pc = n => (n*100) + '%';
+  [slotMain, slotRef].forEach(s=>{
+    s.style.left = pc(G.x/G.W);
+    s.style.width = pc(G.sw/G.W);
+  });
+  slotMain.style.top = pc(G.y/G.H);
+  slotMain.style.filter = state.d3
+    ? 'drop-shadow(0 14px 18px rgba(0,0,0,.34))'
+    : 'drop-shadow(0 8px 12px rgba(0,0,0,.26))';
+  slotRef.style.top = pc((2*G.footY - G.y - G.sh)/G.H);
+  slotRef.classList.toggle('on', !!state.d3);
+  const org = pc(G.bb.x + G.bb.w/2) + ' ' + pc(G.bb.y + G.bb.h);   /* 발을 축으로 움직이게 */
+  liveImg.style.transformOrigin = org;
+  refImg.style.transformOrigin = org;
 }
 
 function mixw(hex, t){            /* t 가 클수록 흰색에 가깝게 */
@@ -408,10 +537,16 @@ function mixw(hex, t){            /* t 가 클수록 흰색에 가깝게 */
   const r = (n>>16)&255, g = (n>>8)&255, b = n&255;
   return `rgb(${Math.round(r+(255-r)*t)},${Math.round(g+(255-g)*t)},${Math.round(b+(255-b)*t)})`;
 }
+function hexA(hex, a){
+  const n = parseInt(hex.slice(1),16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
 
-function draw(){
+/* forSave 일 때만 포켓몬을 캔버스에 그린다.
+   미리보기에서는 위에 겹친 그림 한 겹이 포켓몬 몫을 하므로, 같이 그리면 잔상처럼 보인다. */
+function draw(forSave){
   const d = state.cur; if(!d) return;
-  const W = cv.width, H = cv.height;
+  const G = geom(), W = G.W, H = G.H, cx = G.cx;
   const def = BGS.find(b=>b.k===state.bg);
   let c1, c2;
   if(state.bg==='type'){ c1 = mixw(d.colors[0], .66); c2 = d.colors[d.colors.length-1]; }
@@ -420,55 +555,103 @@ function draw(){
   g.addColorStop(0,c1); g.addColorStop(1,c2);
   ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
 
-  const L = layout(), box = W*L.box, cx = W/2, cy = H*L.cy;
   const dot = KINDS[state.kind].dot;
-  const ready = curImg && curImg.complete && curImg.naturalWidth;
+  const img = (liveImg.complete && liveImg.naturalWidth) ? liveImg : null;
+  const hy = G.footY, tint = d.colors[0], seed = d.id;
+  const pw = G.pw, ph = G.ph;          /* 포켓몬 몸 크기 */
 
   if(state.d3){
-    /* ── 3D 입체 : 바닥 · 격자 · 비친 모습 · 빛 */
-    const hy = cy + box*0.40;                      /* 바닥이 시작되는 높이 */
-    const fg = ctx.createLinearGradient(0, hy-box*0.1, 0, H);
-    fg.addColorStop(0, 'rgba(255,255,255,.34)');
-    fg.addColorStop(.45,'rgba(255,255,255,.10)');
-    fg.addColorStop(1, 'rgba(0,0,0,.22)');
-    ctx.fillStyle = fg; ctx.fillRect(0, hy-box*0.1, W, H-hy+box*0.1);
+    /* ① 바닥 면 */
+    const top = hy - ph*0.30;
+    const fg = ctx.createLinearGradient(0, top, 0, H);
+    fg.addColorStop(0,  'rgba(255,255,255,.26)');
+    fg.addColorStop(.30,'rgba(255,255,255,.07)');
+    fg.addColorStop(1,  'rgba(0,0,0,.32)');
+    ctx.fillStyle = fg; ctx.fillRect(0, top, W, H-top);
 
-    ctx.save();                                     /* 멀어질수록 모이는 바닥 선 */
-    ctx.strokeStyle = 'rgba(255,255,255,.3)'; ctx.lineWidth = 4;
-    for(let i=-6;i<=6;i++){
-      ctx.beginPath(); ctx.moveTo(cx + i*W*0.055, hy);
-      ctx.lineTo(cx + i*W*0.62, H); ctx.stroke();
+    /* ② 멀어질수록 모이는 바닥 선 */
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, hy, W, H-hy); ctx.clip();
+    ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = 4;
+    for(let i=-8;i<=8;i++){
+      ctx.beginPath(); ctx.moveTo(cx + i*W*0.046, hy); ctx.lineTo(cx + i*W*0.78, H); ctx.stroke();
     }
-    for(let j=1;j<=8;j++){
-      const t = j/8, y = hy + (H-hy)*t*t;
-      ctx.globalAlpha = .85 - t*.55;
+    for(let j=1;j<=9;j++){
+      const t = j/9, y = hy + (H-hy)*t*t;
+      ctx.globalAlpha = .7 - t*.55;
       ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
     }
     ctx.restore();
 
-    if(ready){                                      /* 바닥에 비친 모습 */
-      ctx.save();
-      ctx.globalAlpha = .14;
-      ctx.imageSmoothingEnabled = !dot;
-      ctx.translate(0, hy*2); ctx.scale(1,-1);
-      ctx.drawImage(curImg, cx-box/2, cy-box/2, box, box);
-      ctx.restore();
-    }
+    /* ③ 포켓몬 뒤에서 번지는 빛 */
+    const by = hy - ph*0.55, R = Math.max(pw, ph)*0.85;
+    const halo = ctx.createRadialGradient(cx, by, R*0.10, cx, by, R);
+    halo.addColorStop(0,  hexA(tint,0));
+    halo.addColorStop(.40, hexA(tint,.20));
+    halo.addColorStop(.62,'rgba(255,255,255,.24)');
+    halo.addColorStop(.84, hexA(tint,.07));
+    halo.addColorStop(1,  'rgba(255,255,255,0)');
+    ctx.fillStyle = halo; ctx.fillRect(0,0,W,H);
 
-    ctx.save();                                     /* 발밑 그림자 */
-    ctx.globalAlpha = .5;
-    ctx.fillStyle = 'rgba(0,0,0,.24)';
-    ctx.shadowColor = 'rgba(0,0,0,.24)'; ctx.shadowBlur = 90;
-    ctx.beginPath(); ctx.ellipse(cx, hy-box*0.03, box*0.25, box*0.045, 0, 0, 7); ctx.fill();
+    /* ④ 떠 있는 작은 빛 */
+    ctx.save();
+    ctx.fillStyle = '#fff';
+    ctx.shadowColor = 'rgba(255,255,255,.9)'; ctx.shadowBlur = 34;
+    for(let i=0;i<14;i++){
+      const x = ((seed*37 + i*613) % 1000)/1000*W;
+      const y = ((seed*71 + i*929) % 1000)/1000*(hy - ph*0.2);
+      const r = 5 + ((seed*13 + i*277) % 24);
+      ctx.globalAlpha = .10 + ((seed*7 + i*131) % 36)/340;
+      ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill();
+    }
     ctx.restore();
 
-    const lg = ctx.createRadialGradient(cx, cy-box*0.5, 0, cx, cy-box*0.5, box*0.95);
-    lg.addColorStop(0,'rgba(255,255,255,.52)'); lg.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.fillStyle = lg; ctx.fillRect(0,0,W,H);
+    /* ⑤ 둥근 무대 — 측면 두께 · 윗면 · 테두리 빛 */
+    const rx = Math.max(pw*0.62, W*0.17), ry = rx*0.27, th = rx*0.085;
+    ctx.save();
+    ctx.globalAlpha = .34; ctx.fillStyle = 'rgba(0,0,0,.40)';
+    ctx.beginPath(); ctx.ellipse(cx, hy+th, rx*1.015, ry, 0, 0, 7); ctx.fill();
+    ctx.restore();
+    const pg = ctx.createRadialGradient(cx, hy, ry*0.12, cx, hy, rx);
+    pg.addColorStop(0,  'rgba(255,255,255,.10)');   /* 가운데는 비치게, 테두리만 빛나게 */
+    pg.addColorStop(.70, hexA(tint,.12));
+    pg.addColorStop(.92,'rgba(255,255,255,.42)');
+    pg.addColorStop(1,  'rgba(255,255,255,.72)');
+    ctx.beginPath(); ctx.ellipse(cx, hy, rx, ry, 0, 0, 7);
+    ctx.fillStyle = pg; ctx.fill();
+    ctx.lineWidth = 7; ctx.strokeStyle = 'rgba(255,255,255,.80)'; ctx.stroke();
+
+    /* ⑥ 발밑 그림자 — 가장자리로 갈수록 사라지게 */
+    ctx.save();
+    ctx.translate(cx, hy - ry*0.06); ctx.scale(1, 0.30);
+    const sg = ctx.createRadialGradient(0,0,0, 0,0, pw*0.46);
+    sg.addColorStop(0,  'rgba(0,0,0,.30)');
+    sg.addColorStop(.50,'rgba(0,0,0,.13)');
+    sg.addColorStop(1,  'rgba(0,0,0,0)');
+    ctx.fillStyle = sg;
+    ctx.beginPath(); ctx.arc(0, 0, pw*0.46, 0, 7); ctx.fill();
+    ctx.restore();
+
+    /* ⑦ 바닥에 비친 모습 — 저장할 때만(미리보기는 겹친 그림이 대신한다) */
+    if(forSave && img){
+      const rh = Math.ceil(G.sh);
+      const rc = document.createElement('canvas'); rc.width = W; rc.height = rh;
+      const rg = rc.getContext('2d');
+      rg.imageSmoothingEnabled = !dot;
+      rg.translate(0, rh); rg.scale(1,-1);
+      rg.drawImage(img, G.x, 0, G.sw, G.sh);
+      rg.setTransform(1,0,0,1,0,0);
+      const m = rg.createLinearGradient(0,0,0,rh);
+      m.addColorStop(0,'rgba(0,0,0,.95)'); m.addColorStop(.75,'rgba(0,0,0,0)');
+      rg.globalCompositeOperation = 'destination-in';
+      rg.fillStyle = m; rg.fillRect(0,0,W,rh);
+      ctx.save(); ctx.globalAlpha = .20;
+      ctx.drawImage(rc, 0, 2*hy - G.y - G.sh);
+      ctx.restore();
+    }
   } else {
     /* 동글동글 장식 */
     ctx.save(); ctx.globalAlpha = .13; ctx.fillStyle = '#fff';
-    const seed = d.id;
     for(let i=0;i<9;i++){
       const x = ((seed*37 + i*613) % 1000)/1000*W;
       const y = ((seed*71 + i*929) % 1000)/1000*H;
@@ -479,24 +662,32 @@ function draw(){
   }
 
   /* 포켓몬 */
-  if(ready){
+  if(forSave && img){
     ctx.save();
     ctx.imageSmoothingEnabled = !dot;          /* 도트 그림은 네모를 선명하게 */
-    ctx.shadowColor = 'rgba(0,0,0,.22)'; ctx.shadowBlur = 48; ctx.shadowOffsetY = 20;
-    ctx.drawImage(curImg, cx-box/2, cy-box/2, box, box);
+    ctx.shadowColor = 'rgba(0,0,0,.26)'; ctx.shadowBlur = 54; ctx.shadowOffsetY = 22;
+    ctx.drawImage(img, G.x, G.y, G.sw, G.sh);
     ctx.restore();
   }
-  placeLive();
+
+  /* 모서리 어둡게 — 가운데가 도드라지게 */
+  if(state.d3){
+    const vg = ctx.createRadialGradient(cx, H*0.44, W*0.16, cx, H*0.50, H*0.74);
+    vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.26)');
+    ctx.fillStyle = vg; ctx.fillRect(0,0,W,H);
+  }
 
   /* 이름 */
   if(state.name){
-    const y = state.use==='home' ? H*0.80 : H*0.885;
+    const y = Math.min(H*0.93, hy + Math.max(H*0.075, 120));
     ctx.save();
     ctx.textAlign='center'; ctx.font = `700 ${Math.round(W*0.105)}px -apple-system,"Apple SD Gothic Neo",sans-serif`;
     ctx.shadowColor='rgba(0,0,0,.3)'; ctx.shadowBlur=22; ctx.shadowOffsetY=6;
     ctx.fillStyle='#fff'; ctx.fillText(d.ko, W/2, y);
     ctx.restore();
   }
+
+  placeSlots();
 }
 
 /* ── 저장 */
@@ -505,6 +696,7 @@ const svMsg = document.getElementById('svMsg');
 document.getElementById('svClose').onclick = ()=>sv.classList.remove('on');
 document.getElementById('make').onclick = ()=>{
   try{
+    draw(true);                    /* 움직이는 그림이면 지금 보이는 그 장면이 담긴다 */
     svImg.className = '';
     svImg.src = cv.toDataURL('image/png');
     svMsg.innerHTML = '그림을 <b>꾹 눌러</b> 「사진에 추가」를 누르세요.' +
@@ -512,6 +704,8 @@ document.getElementById('make').onclick = ()=>{
     sv.classList.add('on');
   }catch(e){
     alert('그림을 만들지 못했어요. 잠시 뒤 다시 눌러 주세요.');
+  }finally{
+    draw();
   }
 };
 mvSave.onclick = ()=>{
@@ -524,10 +718,12 @@ mvSave.onclick = ()=>{
 };
 document.getElementById('dl').onclick = ()=>{
   try{
+    draw(true);
     const a = document.createElement('a');
     a.download = `${state.cur.ko}_배경화면.png`;
     a.href = cv.toDataURL('image/png'); a.click();
   }catch(e){ alert('내려받지 못했어요.'); }
+  finally{ draw(); }
 };
 
 render();

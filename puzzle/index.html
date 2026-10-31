@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>소수 뺄셈 낱말 퍼즐</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='10' y='10' width='80' height='80' rx='14' fill='%23ffd43b'/><path d='M26 50h48' stroke='%23333' stroke-width='9' stroke-linecap='round'/></svg>">
+<style>
+  :root{
+    --bg:#f6f7fb; --card:#fff; --ink:#20242c; --sub:#6b7280; --line:#e4e8ef;
+    --hl:#ffe600; --pen:#ff7a00; --ok:#2f9e68;
+    --shadow:0 2px 10px rgba(20,30,60,.08);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    padding-bottom:calc(28px + env(safe-area-inset-bottom));overflow-x:hidden;max-width:100vw}
+  header{position:sticky;top:0;z-index:30;background:rgba(246,247,251,.95);
+    backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);
+    padding:13px 16px 11px;padding-top:calc(13px + env(safe-area-inset-top))}
+  h1{margin:0;font-size:20px;letter-spacing:-.4px}
+  .lead{margin:5px 0 0;font-size:13px;color:var(--sub);line-height:1.6}
+  .tools{margin-top:10px;display:flex;gap:7px}
+  .tbtn{flex:1;min-width:0;padding:10px 6px;border:1px solid var(--line);background:#fff;
+    border-radius:12px;font-size:13px;cursor:pointer;font-family:inherit;color:var(--ink);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .tbtn.all.on{background:var(--pen);border-color:var(--pen);color:#fff}
+  h2{margin:22px 16px 9px;font-size:15.5px;letter-spacing:-.3px}
+  h2 small{font-weight:400;color:var(--sub);font-size:12.5px;margin-left:6px}
+  /* 문제 */
+  .qs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:0 16px}
+  @media(min-width:640px){.qs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  .q{display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--card);
+    border:1px solid var(--line);border-radius:14px;padding:12px 11px;cursor:pointer;min-width:0;
+    box-shadow:var(--shadow);transition:transform .12s,border-color .12s}
+  .q:active{transform:scale(.97)}
+  .q.on{border-color:var(--pen);box-shadow:0 0 0 2px rgba(255,122,0,.18),var(--shadow)}
+  .qe{font-size:clamp(13px,3.9vw,15.5px);font-weight:700;letter-spacing:-.4px;white-space:nowrap;
+    overflow:hidden;min-width:0}
+  .qa{font-size:clamp(14px,4.2vw,17px);font-weight:800;color:var(--ok);min-width:46px;
+    text-align:right;flex:none}
+  .qa.hide{color:transparent;background:#eef1f6;border-radius:8px;position:relative}
+  .qa.hide::after{content:'?';position:absolute;inset:0;color:#9aa4b2;font-size:16px;
+    display:flex;align-items:center;justify-content:center}
+  /* 퍼즐 */
+  .wrap{margin:0 16px;max-width:calc(100% - 32px);background:var(--card);border:1px solid var(--line);
+    border-radius:18px;padding:10px;box-shadow:var(--shadow);position:relative}
+  .board{position:relative;width:100%;max-width:100%;aspect-ratio:1}
+  .grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(8,1fr);
+    grid-template-rows:repeat(8,1fr)}
+  .cell{display:flex;align-items:center;justify-content:center;border:1px solid #e9edf3;
+    font-size:clamp(14px,4.2vw,22px);font-weight:600;color:#3a4049;position:relative}
+  .cell.hl{color:#1b1f26;font-weight:800;
+    background:linear-gradient(180deg,rgba(255,241,118,.45) 0%,rgba(255,230,0,.92) 26%,
+      rgba(255,226,30,.95) 74%,rgba(255,243,130,.5) 100%)}
+  .cell.hl2{background:linear-gradient(180deg,rgba(185,245,165,.4) 0%,rgba(140,235,110,.75) 26%,
+      rgba(140,235,110,.8) 74%,rgba(190,246,170,.45) 100%)}
+  svg.pen{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .tip{margin:10px 16px 0;font-size:12.5px;color:var(--sub);line-height:1.6}
+  .legend{display:flex;gap:14px;align-items:center;margin:9px 16px 0;font-size:12.5px;color:var(--sub);
+    flex-wrap:wrap}
+  .legend i{display:inline-block;width:15px;height:15px;border-radius:4px;vertical-align:-3px;
+    margin-right:5px;background:rgba(255,230,0,.92)}
+  .legend i.g{background:rgba(140,235,110,.78)}
+  .help{margin:20px 16px 10px;background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:14px 16px}
+  .help b{font-size:14.5px}
+  .help ul{margin:8px 0 0;padding-left:18px;font-size:13.5px;color:#39404a;line-height:1.85}
+</style>
+</head>
+<body>
+<header>
+  <h1>소수 뺄셈 낱말 퍼즐</h1>
+  <p class="lead">문제를 누르면 답이 나오고, 아래 퍼즐에서 <b>동그라미 칠 자리</b>에 형광펜이 칠해져요.</p>
+  <div class="tools">
+    <button class="tbtn" id="btnShow">답 보이기</button>
+    <button class="tbtn all" id="btnAll">모두 칠하기</button>
+    <button class="tbtn" id="btnClear">지우기</button>
+  </div>
+</header>
+
+<h2>문제 <small>누르면 답이 나와요</small></h2>
+<div class="qs" id="qs"></div>
+
+<h2>낱말 퍼즐 <small>형광펜 자리에 동그라미를 치면 돼요</small></h2>
+<div class="wrap">
+  <div class="board">
+    <div class="grid" id="grid"></div>
+    <svg class="pen" id="pen" viewBox="0 0 800 800" preserveAspectRatio="none"></svg>
+  </div>
+</div>
+<div class="legend">
+  <span><i></i>지금 고른 답</span>
+  <span><i class="g"></i>같은 답이 또 있는 자리</span>
+</div>
+<p class="tip" id="tip">문제를 하나 눌러 보세요.</p>
+
+<div class="help">
+  <b>어떻게 쓰면 되나요</b>
+  <ul>
+    <li>먼저 공책에 직접 풀어 보고, 맞는지 볼 때 문제를 눌러요.</li>
+    <li>답은 <b>가로 · 세로 · 비스듬히</b> 숨어 있어요.</li>
+    <li>초록색은 같은 답이 다른 자리에도 숨어 있다는 뜻이에요. 둘 중 아무 곳이나 동그라미를 치면 돼요.</li>
+    <li><b>모두 칠하기</b>를 누르면 답 열두 개가 한 번에 보여요.</li>
+  </ul>
+</div>
+
+<script>
+const GRID = [
+  '삼점일사영점육일',
+  '이삼영점일일영영',
+  '점오점사삼점사구',
+  '영오일일칠일구팔',
+  '삼삼구사사일칠이',
+  '오삼점이오육삼사',
+  '육오점오삼점영오',
+  '일칠팔구일영일이',
+].map(r => r.split(''));
+
+const Q = [
+  {e:'0.58 - 0.47', a:'0.11'},
+  {e:'0.65 - 0.46', a:'0.19'},
+  {e:'2.1 - 0.99',  a:'1.11'},
+  {e:'3.65 - 0.4',  a:'3.25'},
+  {e:'6.3 - 0.77',  a:'5.53'},
+  {e:'4 - 0.49',    a:'3.51'},
+  {e:'4.37 - 2.45', a:'1.92'},
+  {e:'7.8 - 4.66',  a:'3.14'},
+  {e:'9.12 - 7.09', a:'2.03'},
+  {e:'6.54 - 2.13', a:'4.41'},
+  {e:'1.5 - 0.89',  a:'0.61'},
+  {e:'3.2 - 0.15',  a:'3.05'},
+];
+
+const KO = {'0':'영','1':'일','2':'이','3':'삼','4':'사','5':'오','6':'육','7':'칠','8':'팔','9':'구','.':'점'};
+const toKo = s => s.split('').map(c=>KO[c]).join('');
+const DIRS = [
+  {d:[0,1],  n:'→ 오른쪽으로'},
+  {d:[1,0],  n:'↓ 아래로'},
+  {d:[1,1],  n:'↘ 오른쪽 아래로'},
+  {d:[-1,1], n:'↗ 오른쪽 위로'},
+  {d:[0,-1], n:'← 왼쪽으로'},
+  {d:[-1,0], n:'↑ 위로'},
+];
+const R = GRID.length, C = GRID[0].length;
+
+function findAll(num){
+  const w = toKo(num), n = w.length, out = [];
+  for(const {d:[dr,dc], n:nm} of DIRS){
+    for(let r=0;r<R;r++){ for(let c=0;c<C;c++){
+      const er = r+dr*(n-1), ec = c+dc*(n-1);
+      if(er<0||er>=R||ec<0||ec>=C) continue;
+      let ok = true;
+      for(let i=0;i<n;i++) if(GRID[r+dr*i][c+dc*i] !== w[i]){ ok = false; break; }
+      if(ok) out.push({r, c, dr, dc, n, nm, w});
+    }}
+  }
+  return out;
+}
+const HITS = Q.map(q => findAll(q.a));
+
+/* 문제 카드 */
+let sel = null, showAll = false, penAll = false;
+const qs = document.getElementById('qs');
+Q.forEach((q,i)=>{
+  const b = document.createElement('div');
+  b.className = 'q'; b.dataset.i = i;
+  b.innerHTML = `<span class="qe">${q.e} =</span><span class="qa hide">${q.a}</span>`;
+  b.onclick = ()=>{ sel = (sel===i ? null : i); penAll = false; paint(); };
+  qs.appendChild(b);
+});
+
+/* 퍼즐 칸 */
+const gridEl = document.getElementById('grid');
+const cells = [];
+for(let r=0;r<R;r++){ for(let c=0;c<C;c++){
+  const d = document.createElement('div');
+  d.className = 'cell'; d.textContent = GRID[r][c];
+  gridEl.appendChild(d); cells.push(d);
+}}
+const cellAt = (r,c) => cells[r*C + c];
+
+const pen = document.getElementById('pen');
+const tip = document.getElementById('tip');
+const COLORS = ['#ff7a00','#e0457b','#2f7de0','#2f9e68','#8a4fd8','#d8a200',
+                '#e2542f','#1aa1a6','#b5308f','#4b7a1f','#3f5ad8','#c2492a'];
+
+function ellipse(hit, color, dash){
+  const S = 100;                                   /* 칸 하나 = 100 */
+  const x1 = hit.c*S + S/2, y1 = hit.r*S + S/2;
+  const x2 = (hit.c + hit.dc*(hit.n-1))*S + S/2;
+  const y2 = (hit.r + hit.dr*(hit.n-1))*S + S/2;
+  const mx = (x1+x2)/2, my = (y1+y2)/2;
+  const len = Math.hypot(x2-x1, y2-y1);
+  const deg = Math.atan2(y2-y1, x2-x1)*180/Math.PI;
+  const rx = len/2 + 42, ry = 44;
+  const e = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+  e.setAttribute('cx', mx); e.setAttribute('cy', my);
+  e.setAttribute('rx', rx); e.setAttribute('ry', ry);
+  e.setAttribute('transform', `rotate(${deg} ${mx} ${my})`);
+  e.setAttribute('fill','none');
+  e.setAttribute('stroke', color);
+  e.setAttribute('stroke-width', dash ? 5 : 7);
+  e.setAttribute('stroke-linecap','round');
+  if(dash) e.setAttribute('stroke-dasharray','16 13');
+  e.setAttribute('vector-effect','non-scaling-stroke');
+  pen.appendChild(e);
+  return e;
+}
+
+function mark(hit, cls){
+  for(let i=0;i<hit.n;i++) cellAt(hit.r + hit.dr*i, hit.c + hit.dc*i).classList.add(cls);
+}
+
+function paint(){
+  cells.forEach(c=>c.classList.remove('hl','hl2'));
+  pen.innerHTML = '';
+  [...qs.children].forEach(el=>{
+    const i = +el.dataset.i;
+    el.classList.toggle('on', sel===i);
+    el.querySelector('.qa').classList.toggle('hide', !(showAll || sel===i));
+  });
+
+  if(penAll){
+    HITS.forEach((hits, i)=>{
+      if(!hits.length) return;
+      mark(hits[0], 'hl');
+      ellipse(hits[0], COLORS[i % COLORS.length], false);
+    });
+    tip.textContent = '답 12개를 모두 칠했어요. 색이 다른 동그라미 하나가 답 하나예요.';
+    return;
+  }
+  if(sel === null){
+    tip.textContent = '문제를 하나 눌러 보세요.';
+    return;
+  }
+  const hits = HITS[sel];
+  if(!hits.length){ tip.textContent = '이 답은 퍼즐에서 찾지 못했어요.'; return; }
+  hits.forEach((h, k)=>{
+    mark(h, k===0 ? 'hl' : 'hl2');
+    ellipse(h, k===0 ? 'var(--pen)' : '#3d9c4e', k>0);
+  });
+  const h = hits[0];
+  tip.innerHTML = `<b>${Q[sel].e} = ${Q[sel].a}</b> → 「${h.w}」, ` +
+    `위에서 ${h.r+1}번째 줄, 왼쪽에서 ${h.c+1}번째 칸부터 ${h.nm}` +
+    (hits.length>1 ? ` · 같은 답이 ${hits.length-1}곳에 더 있어요(초록색).` : '');
+}
+
+document.getElementById('btnShow').onclick = e=>{
+  showAll = !showAll;
+  e.currentTarget.classList.toggle('on', showAll);
+  e.currentTarget.textContent = showAll ? '답 가리기' : '답 보이기';
+  paint();
+};
+document.getElementById('btnAll').onclick = e=>{
+  penAll = !penAll; sel = null;
+  e.currentTarget.classList.toggle('on', penAll);
+  paint();
+};
+document.getElementById('btnClear').onclick = ()=>{
+  sel = null; penAll = false;
+  document.getElementById('btnAll').classList.remove('on');
+  paint();
+};
+
+paint();
+</script>
+</body>
+</html>
