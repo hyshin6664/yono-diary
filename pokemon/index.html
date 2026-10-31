@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>윤오 포켓몬 배경화면</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ee4b4b'/><path d='M4 50h92' stroke='%23222' stroke-width='8'/><circle cx='50' cy='50' r='16' fill='%23fff' stroke='%23222' stroke-width='8'/></svg>">
+<style>
+  :root{
+    --bg:#f4f6fb; --card:#ffffff; --ink:#1d2127; --sub:#6b7280;
+    --line:#e3e7ee; --accent:#ee4b4b; --accent2:#3b6ef0;
+    --shadow:0 2px 10px rgba(20,30,60,.08);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    padding-bottom:env(safe-area-inset-bottom)}
+  header{position:sticky;top:0;z-index:30;background:rgba(244,246,251,.94);
+    backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);
+    padding:14px 16px 10px;padding-top:calc(14px + env(safe-area-inset-top))}
+  h1{margin:0;font-size:21px;letter-spacing:-.4px;display:flex;align-items:center;gap:8px}
+  h1 .ball{width:22px;height:22px;flex:none}
+  .lead{margin:5px 0 0;font-size:13px;color:var(--sub)}
+  .tools{margin-top:11px;display:flex;gap:8px;align-items:center}
+  input[type=search]{flex:1;min-width:0;padding:11px 13px;font-size:15px;border:1px solid var(--line);
+    border-radius:12px;background:#fff;color:var(--ink);outline:none;font-family:inherit}
+  input[type=search]:focus{border-color:var(--accent2)}
+  .starbtn{flex:none;padding:11px 13px;border:1px solid var(--line);background:#fff;border-radius:12px;
+    font-size:15px;cursor:pointer;font-family:inherit}
+  .starbtn.on{background:#fff6d8;border-color:#f0c23a}
+  .chips{display:flex;gap:7px;overflow-x:auto;padding:10px 16px 12px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:#fff;
+    font-size:13.5px;cursor:pointer;white-space:nowrap;font-family:inherit;color:var(--ink)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .count{padding:0 16px 8px;font-size:12.5px;color:var(--sub)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:11px;padding:0 16px 30px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:9px 7px 10px;
+    text-align:center;cursor:pointer;position:relative;box-shadow:var(--shadow);transition:transform .12s}
+  .card:active{transform:scale(.96)}
+  .card img{width:100%;aspect-ratio:1;object-fit:contain;display:block}
+  .nm{font-size:13.5px;font-weight:700;margin-top:3px;letter-spacing:-.3px}
+  .no{font-size:10.5px;color:var(--sub);margin-top:1px}
+  .tp{display:flex;gap:3px;justify-content:center;margin-top:5px;flex-wrap:wrap}
+  .tp span{font-size:10px;color:#fff;padding:2px 6px;border-radius:999px;line-height:1.5}
+  .fav{position:absolute;top:5px;right:6px;font-size:17px;line-height:1;opacity:.22}
+  .fav.on{opacity:1}
+  /* 미리보기 */
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(16,20,28,.72);display:none;
+    align-items:flex-start;justify-content:center;overflow-y:auto;padding:18px 14px 40px}
+  .modal.on{display:flex}
+  .sheet{background:#fff;border-radius:20px;max-width:430px;width:100%;padding:16px 16px 20px;
+    box-shadow:0 18px 50px rgba(0,0,0,.3);margin-top:env(safe-area-inset-top)}
+  .shead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .shead b{font-size:18px}
+  .x{border:none;background:#eef1f6;border-radius:999px;width:32px;height:32px;font-size:17px;
+    cursor:pointer;color:#555;font-family:inherit}
+  .phone{margin:13px auto 0;width:186px;aspect-ratio:9/19.5;border-radius:26px;overflow:hidden;
+    border:4px solid #1b1f27;background:#000;position:relative}
+  .phone canvas{width:100%;height:100%;display:block}
+  .opt{margin-top:14px}
+  .opt h4{margin:0 0 7px;font-size:13px;color:var(--sub);font-weight:600}
+  .row{display:flex;gap:7px;flex-wrap:wrap}
+  .sw{width:38px;height:38px;border-radius:11px;border:2px solid transparent;cursor:pointer}
+  .sw.on{border-color:#1d2127;box-shadow:0 0 0 2px #fff inset}
+  .seg{display:flex;gap:6px}
+  .seg button{flex:1;padding:9px;border-radius:11px;border:1px solid var(--line);background:#fff;
+    font-size:13.5px;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .seg button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .save{margin-top:16px;width:100%;padding:15px;border:none;border-radius:14px;background:var(--accent);
+    color:#fff;font-size:16.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  .dl{margin-top:8px;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;
+    background:#fff;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink)}
+  /* 저장 화면 */
+  .save-view{position:fixed;inset:0;z-index:80;background:#0d1116;display:none;flex-direction:column;
+    align-items:center;justify-content:center;padding:14px}
+  .save-view.on{display:flex}
+  .save-view img{max-width:min(78vw,330px);max-height:68vh;border-radius:14px;
+    box-shadow:0 10px 40px rgba(0,0,0,.6)}
+  .save-view p{color:#fff;font-size:15px;text-align:center;margin:16px 20px 0;line-height:1.6}
+  .save-view small{color:#9aa4b2;font-size:12.5px;display:block;margin-top:7px}
+  .save-view button{margin-top:18px;padding:12px 26px;border-radius:12px;border:none;background:#fff;
+    font-size:15px;cursor:pointer;font-family:inherit}
+  .help{margin:6px 16px 36px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px 17px}
+  .help b{font-size:14.5px}
+  .help ol{margin:9px 0 0;padding-left:19px;font-size:13.5px;color:#39404a;line-height:1.85}
+</style>
+</head>
+<body>
+<header>
+  <h1>
+    <svg class="ball" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#ee4b4b"/>
+      <path d="M4 50h92" stroke="#222" stroke-width="8"/>
+      <circle cx="50" cy="50" r="16" fill="#fff" stroke="#222" stroke-width="8"/></svg>
+    윤오 포켓몬 배경화면
+  </h1>
+  <p class="lead">포켓몬을 고르면 아이폰 배경화면을 만들어 줘요. 102마리 중에서 골라 보세요.</p>
+  <div class="tools">
+    <input type="search" id="q" placeholder="이름으로 찾기 (예: 피카츄)" autocomplete="off">
+    <button class="starbtn" id="favOnly" title="즐겨찾기만">☆</button>
+  </div>
+</header>
+
+<div class="chips" id="chips"></div>
+<div class="count" id="count"></div>
+<div class="grid" id="grid"></div>
+
+<div class="help">
+  <b>아이폰에 넣는 방법</b>
+  <ol>
+    <li>포켓몬을 고르고 <b>배경 색</b>과 <b>잠금화면 / 홈화면</b>을 정해요.</li>
+    <li><b>배경화면 만들기</b>를 누르면 큰 그림이 나와요.</li>
+    <li>그림을 <b>꾹 누르고</b> 「사진에 추가」를 눌러 저장해요.</li>
+    <li>아이폰 <b>설정 → 배경화면 → 새로운 배경화면 추가 → 사진</b>에서 방금 저장한 그림을 고르면 끝이에요.</li>
+  </ol>
+</div>
+
+<div class="modal" id="modal">
+  <div class="sheet">
+    <div class="shead"><b id="mName">피카츄</b><button class="x" id="mClose">✕</button></div>
+    <div class="phone"><canvas id="cv" width="1290" height="2796"></canvas></div>
+
+    <div class="opt"><h4>배경 색</h4><div class="row" id="bgRow"></div></div>
+    <div class="opt"><h4>어디에 쓸까요</h4>
+      <div class="seg" id="useSeg">
+        <button data-use="lock" class="on">잠금화면</button>
+        <button data-use="home">홈화면</button>
+      </div>
+    </div>
+    <div class="opt"><h4>이름 넣기</h4>
+      <div class="seg" id="nameSeg">
+        <button data-name="0" class="on">없이</button>
+        <button data-name="1">이름 넣기</button>
+      </div>
+    </div>
+
+    <button class="save" id="make">배경화면 만들기</button>
+    <button class="dl" id="dl">컴퓨터로 내려받기</button>
+  </div>
+</div>
+
+<div class="save-view" id="sv">
+  <img id="svImg" alt="만든 배경화면">
+  <p>그림을 <b>꾹 눌러</b> 「사진에 추가」를 누르세요.
+    <small>저장한 뒤 설정 → 배경화면에서 고르면 돼요.</small></p>
+  <button id="svClose">닫기</button>
+</div>
+
+<script>
+const DATA = [{"id": 1, "ko": "이상해씨", "types": ["풀", "독"], "colors": ["#62BB5A", "#9B59B6"], "gen": 1}, {"id": 3, "ko": "이상해꽃", "types": ["풀", "독"], "colors": ["#62BB5A", "#9B59B6"], "gen": 1}, {"id": 4, "ko": "파이리", "types": ["불꽃"], "colors": ["#F08030"], "gen": 1}, {"id": 6, "ko": "리자몽", "types": ["불꽃", "비행"], "colors": ["#F08030", "#8CA7E8"], "gen": 1}, {"id": 7, "ko": "꼬부기", "types": ["물"], "colors": ["#4F8FD6"], "gen": 1}, {"id": 9, "ko": "거북왕", "types": ["물"], "colors": ["#4F8FD6"], "gen": 1}, {"id": 12, "ko": "버터플", "types": ["벌레", "비행"], "colors": ["#9BBA2C", "#8CA7E8"], "gen": 1}, {"id": 25, "ko": "피카츄", "types": ["전기"], "colors": ["#F6C844"], "gen": 1}, {"id": 26, "ko": "라이츄", "types": ["전기"], "colors": ["#F6C844"], "gen": 1}, {"id": 35, "ko": "삐삐", "types": ["페어리"], "colors": ["#EE9AC4"], "gen": 1}, {"id": 39, "ko": "푸린", "types": ["노말", "페어리"], "colors": ["#9FA19F", "#EE9AC4"], "gen": 1}, {"id": 52, "ko": "나옹", "types": ["노말"], "colors": ["#9FA19F"], "gen": 1}, {"id": 54, "ko": "고라파덕", "types": ["물"], "colors": ["#4F8FD6"], "gen": 1}, {"id": 59, "ko": "윈디", "types": ["불꽃"], "colors": ["#F08030"], "gen": 1}, {"id": 65, "ko": "후딘", "types": ["에스퍼"], "colors": ["#F05A8B"], "gen": 1}, {"id": 68, "ko": "괴력몬", "types": ["격투"], "colors": ["#C03028"], "gen": 1}, {"id": 76, "ko": "딱구리", "types": ["바위", "땅"], "colors": ["#B8A038", "#D8A857"], "gen": 1}, {"id": 78, "ko": "날쌩마", "types": ["불꽃"], "colors": ["#F08030"], "gen": 1}, {"id": 80, "ko": "야도란", "types": ["물", "에스퍼"], "colors": ["#4F8FD6", "#F05A8B"], "gen": 1}, {"id": 92, "ko": "고오스", "types": ["고스트", "독"], "colors": ["#6C5A9B", "#9B59B6"], "gen": 1}, {"id": 94, "ko": "팬텀", "types": ["고스트", "독"], "colors": ["#6C5A9B", "#9B59B6"], "gen": 1}, {"id": 95, "ko": "롱스톤", "types": ["바위", "땅"], "colors": ["#B8A038", "#D8A857"], "gen": 1}, {"id": 105, "ko": "텅구리", "types": ["땅"], "colors": ["#D8A857"], "gen": 1}, {"id": 113, "ko": "럭키", "types": ["노말"], "colors": ["#9FA19F"], "gen": 1}, {"id": 123, "ko": "스라크", "types": ["벌레", "비행"], "colors": ["#9BBA2C", "#8CA7E8"], "gen": 1}, {"id": 129, "ko": "잉어킹", "types": ["물"], "colors": ["#4F8FD6"], "gen": 1}, {"id": 130, "ko": "갸라도스", "types": ["물", "비행"], "colors": ["#4F8FD6", "#8CA7E8"], "gen": 1}, {"id": 131, "ko": "라프라스", "types": ["물", "얼음"], "colors": ["#4F8FD6", "#76D0C8"], "gen": 1}, {"id": 133, "ko": "이브이", "types": ["노말"], "colors": ["#9FA19F"], "gen": 1}, {"id": 134, "ko": "샤미드", "types": ["물"], "colors": ["#4F8FD6"], "gen": 1}, {"id": 135, "ko": "쥬피썬더", "types": ["전기"], "colors": ["#F6C844"], "gen": 1}, {"id": 136, "ko": "부스터", "types": ["불꽃"], "colors": ["#F08030"], "gen": 1}, {"id": 137, "ko": "폴리곤", "types": ["노말"], "colors": ["#9FA19F"], "gen": 1}, {"id": 142, "ko": "프테라", "types": ["바위", "비행"], "colors": ["#B8A038", "#8CA7E8"], "gen": 1}, {"id": 143, "ko": "잠만보", "types": ["노말"], "colors": ["#9FA19F"], "gen": 1}, {"id": 144, "ko": "프리져", "types": ["얼음", "비행"], "colors": ["#76D0C8", "#8CA7E8"], "gen": 1}, {"id": 145, "ko": "썬더", "types": ["전기", "비행"], "colors": ["#F6C844", "#8CA7E8"], "gen": 1}, {"id": 146, "ko": "파이어", "types": ["불꽃", "비행"], "colors": ["#F08030", "#8CA7E8"], "gen": 1}, {"id": 147, "ko": "미뇽", "types": ["드래곤"], "colors": ["#6A52E8"], "gen": 1}, {"id": 149, "ko": "망나뇽", "types": ["드래곤", "비행"], "colors": ["#6A52E8", "#8CA7E8"], "gen": 1}, {"id": 150, "ko": "뮤츠", "types": ["에스퍼"], "colors": ["#F05A8B"], "gen": 1}, {"id": 151, "ko": "뮤", "types": ["에스퍼"], "colors": ["#F05A8B"], "gen": 1}, {"id": 155, "ko": "브케인", "types": ["불꽃"], "colors": ["#F08030"], "gen": 2}, {"id": 157, "ko": "블레이범", "types": ["불꽃"], "colors": ["#F08030"], "gen": 2}, {"id": 158, "ko": "리아코", "types": ["물"], "colors": ["#4F8FD6"], "gen": 2}, {"id": 160, "ko": "장크로다일", "types": ["물"], "colors": ["#4F8FD6"], "gen": 2}, {"id": 169, "ko": "크로뱃", "types": ["독", "비행"], "colors": ["#9B59B6", "#8CA7E8"], "gen": 2}, {"id": 172, "ko": "피츄", "types": ["전기"], "colors": ["#F6C844"], "gen": 2}, {"id": 175, "ko": "토게피", "types": ["페어리"], "colors": ["#EE9AC4"], "gen": 2}, {"id": 179, "ko": "메리프", "types": ["전기"], "colors": ["#F6C844"], "gen": 2}, {"id": 181, "ko": "전룡", "types": ["전기"], "colors": ["#F6C844"], "gen": 2}, {"id": 183, "ko": "마릴", "types": ["물", "페어리"], "colors": ["#4F8FD6", "#EE9AC4"], "gen": 2}, {"id": 196, "ko": "에브이", "types": ["에스퍼"], "colors": ["#F05A8B"], "gen": 2}, {"id": 197, "ko": "블래키", "types": ["악"], "colors": ["#5A5048"], "gen": 2}, {"id": 212, "ko": "핫삼", "types": ["벌레", "강철"], "colors": ["#9BBA2C", "#A8A8C0"], "gen": 2}, {"id": 214, "ko": "헤라크로스", "types": ["벌레", "격투"], "colors": ["#9BBA2C", "#C03028"], "gen": 2}, {"id": 229, "ko": "헬가", "types": ["악", "불꽃"], "colors": ["#5A5048", "#F08030"], "gen": 2}, {"id": 243, "ko": "라이코", "types": ["전기"], "colors": ["#F6C844"], "gen": 2}, {"id": 244, "ko": "앤테이", "types": ["불꽃"], "colors": ["#F08030"], "gen": 2}, {"id": 245, "ko": "스이쿤", "types": ["물"], "colors": ["#4F8FD6"], "gen": 2}, {"id": 248, "ko": "마기라스", "types": ["바위", "악"], "colors": ["#B8A038", "#5A5048"], "gen": 2}, {"id": 249, "ko": "루기아", "types": ["에스퍼", "비행"], "colors": ["#F05A8B", "#8CA7E8"], "gen": 2}, {"id": 250, "ko": "칠색조", "types": ["불꽃", "비행"], "colors": ["#F08030", "#8CA7E8"], "gen": 2}, {"id": 251, "ko": "세레비", "types": ["에스퍼", "풀"], "colors": ["#F05A8B", "#62BB5A"], "gen": 2}, {"id": 252, "ko": "나무지기", "types": ["풀"], "colors": ["#62BB5A"], "gen": 3}, {"id": 254, "ko": "나무킹", "types": ["풀"], "colors": ["#62BB5A"], "gen": 3}, {"id": 255, "ko": "아차모", "types": ["불꽃"], "colors": ["#F08030"], "gen": 3}, {"id": 257, "ko": "번치코", "types": ["불꽃", "격투"], "colors": ["#F08030", "#C03028"], "gen": 3}, {"id": 258, "ko": "물짱이", "types": ["물"], "colors": ["#4F8FD6"], "gen": 3}, {"id": 260, "ko": "대짱이", "types": ["물", "땅"], "colors": ["#4F8FD6", "#D8A857"], "gen": 3}, {"id": 282, "ko": "가디안", "types": ["에스퍼", "페어리"], "colors": ["#F05A8B", "#EE9AC4"], "gen": 3}, {"id": 302, "ko": "깜까미", "types": ["악", "고스트"], "colors": ["#5A5048", "#6C5A9B"], "gen": 3}, {"id": 330, "ko": "플라이곤", "types": ["땅", "드래곤"], "colors": ["#D8A857", "#6A52E8"], "gen": 3}, {"id": 350, "ko": "밀로틱", "types": ["물"], "colors": ["#4F8FD6"], "gen": 3}, {"id": 376, "ko": "메타그로스", "types": ["강철", "에스퍼"], "colors": ["#A8A8C0", "#F05A8B"], "gen": 3}, {"id": 380, "ko": "라티아스", "types": ["드래곤", "에스퍼"], "colors": ["#6A52E8", "#F05A8B"], "gen": 3}, {"id": 381, "ko": "라티오스", "types": ["드래곤", "에스퍼"], "colors": ["#6A52E8", "#F05A8B"], "gen": 3}, {"id": 382, "ko": "가이오가", "types": ["물"], "colors": ["#4F8FD6"], "gen": 3}, {"id": 383, "ko": "그란돈", "types": ["땅"], "colors": ["#D8A857"], "gen": 3}, {"id": 384, "ko": "레쿠쟈", "types": ["드래곤", "비행"], "colors": ["#6A52E8", "#8CA7E8"], "gen": 3}, {"id": 385, "ko": "지라치", "types": ["강철", "에스퍼"], "colors": ["#A8A8C0", "#F05A8B"], "gen": 3}, {"id": 390, "ko": "불꽃숭이", "types": ["불꽃"], "colors": ["#F08030"], "gen": 4}, {"id": 393, "ko": "팽도리", "types": ["물"], "colors": ["#4F8FD6"], "gen": 4}, {"id": 445, "ko": "한카리아스", "types": ["드래곤", "땅"], "colors": ["#6A52E8", "#D8A857"], "gen": 4}, {"id": 448, "ko": "루카리오", "types": ["격투", "강철"], "colors": ["#C03028", "#A8A8C0"], "gen": 4}, {"id": 468, "ko": "토게키스", "types": ["페어리", "비행"], "colors": ["#EE9AC4", "#8CA7E8"], "gen": 4}, {"id": 483, "ko": "디아루가", "types": ["강철", "드래곤"], "colors": ["#A8A8C0", "#6A52E8"], "gen": 4}, {"id": 484, "ko": "펄기아", "types": ["물", "드래곤"], "colors": ["#4F8FD6", "#6A52E8"], "gen": 4}, {"id": 487, "ko": "기라티나", "types": ["고스트", "드래곤"], "colors": ["#6C5A9B", "#6A52E8"], "gen": 4}, {"id": 493, "ko": "아르세우스", "types": ["노말"], "colors": ["#9FA19F"], "gen": 4}, {"id": 571, "ko": "조로아크", "types": ["악"], "colors": ["#5A5048"], "gen": 5}, {"id": 643, "ko": "레시라무", "types": ["드래곤", "불꽃"], "colors": ["#6A52E8", "#F08030"], "gen": 5}, {"id": 644, "ko": "제크로무", "types": ["드래곤", "전기"], "colors": ["#6A52E8", "#F6C844"], "gen": 5}, {"id": 658, "ko": "개굴닌자", "types": ["물", "악"], "colors": ["#4F8FD6", "#5A5048"], "gen": 6}, {"id": 700, "ko": "님피아", "types": ["페어리"], "colors": ["#EE9AC4"], "gen": 6}, {"id": 778, "ko": "따라큐", "types": ["고스트", "페어리"], "colors": ["#6C5A9B", "#EE9AC4"], "gen": 7}, {"id": 791, "ko": "솔가레오", "types": ["에스퍼", "강철"], "colors": ["#F05A8B", "#A8A8C0"], "gen": 7}, {"id": 792, "ko": "루나아라", "types": ["에스퍼", "고스트"], "colors": ["#F05A8B", "#6C5A9B"], "gen": 7}, {"id": 815, "ko": "에이스번", "types": ["불꽃"], "colors": ["#F08030"], "gen": 8}, {"id": 818, "ko": "인텔리레온", "types": ["물"], "colors": ["#4F8FD6"], "gen": 8}, {"id": 887, "ko": "드래펄트", "types": ["드래곤", "고스트"], "colors": ["#6A52E8", "#6C5A9B"], "gen": 8}, {"id": 888, "ko": "자시안", "types": ["페어리"], "colors": ["#EE9AC4"], "gen": 8}];
+const IMG = id => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+const TYPE_COLOR = {};
+
+const BGS = [
+  {k:'type',  label:'포켓몬 색'},
+  {k:'sky',   label:'하늘',   c:['#7ec8f2','#dff1fb']},
+  {k:'sunset',label:'노을',   c:['#ffb36b','#ff6f91']},
+  {k:'mint',  label:'민트',   c:['#8fe3c8','#e9fbf3']},
+  {k:'night', label:'밤하늘', c:['#2b3a67','#101726']},
+  {k:'cream', label:'크림',   c:['#fff3d6','#ffe0b8']},
+  {k:'white', label:'하양',   c:['#ffffff','#eef1f6']},
+];
+
+let state = {fav:new Set(JSON.parse(localStorage.getItem('yonoFav')||'[]')),
+             favOnly:false, type:'전체', q:'', cur:null, bg:'type', use:'lock', name:0};
+
+/* ── 목록 */
+const grid = document.getElementById('grid');
+const chips = document.getElementById('chips');
+const types = ['전체', ...Array.from(new Set(DATA.flatMap(d=>d.types)))];
+types.forEach(t=>{
+  const b = document.createElement('button');
+  b.className = 'chip' + (t==='전체'?' on':''); b.textContent = t;
+  b.onclick = ()=>{ state.type=t; [...chips.children].forEach(c=>c.classList.remove('on'));
+                    b.classList.add('on'); render(); };
+  chips.appendChild(b);
+});
+document.getElementById('q').oninput = e=>{ state.q = e.target.value.trim(); render(); };
+document.getElementById('favOnly').onclick = e=>{
+  state.favOnly = !state.favOnly;
+  e.currentTarget.classList.toggle('on', state.favOnly);
+  e.currentTarget.textContent = state.favOnly ? '★' : '☆';
+  render();
+};
+
+function render(){
+  const list = DATA.filter(d =>
+    (state.type==='전체' || d.types.includes(state.type)) &&
+    (!state.q || d.ko.includes(state.q)) &&
+    (!state.favOnly || state.fav.has(d.id)));
+  document.getElementById('count').textContent = `${list.length}마리`;
+  grid.innerHTML = '';
+  list.forEach(d=>{
+    const c = document.createElement('div'); c.className='card';
+    c.innerHTML = `<span class="fav${state.fav.has(d.id)?' on':''}">★</span>
+      <img loading="lazy" src="${IMG(d.id)}" alt="${d.ko}">
+      <div class="nm">${d.ko}</div><div class="no">도감 ${d.id}</div>
+      <div class="tp">${d.types.map((t,i)=>`<span style="background:${d.colors[i]}">${t}</span>`).join('')}</div>`;
+    c.querySelector('.fav').onclick = ev=>{
+      ev.stopPropagation();
+      state.fav.has(d.id) ? state.fav.delete(d.id) : state.fav.add(d.id);
+      localStorage.setItem('yonoFav', JSON.stringify([...state.fav]));
+      render();
+    };
+    c.onclick = ()=>open(d);
+    grid.appendChild(c);
+  });
+}
+
+/* ── 미리보기 */
+const modal = document.getElementById('modal');
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const bgRow = document.getElementById('bgRow');
+let curImg = null;
+
+BGS.forEach(b=>{
+  const s = document.createElement('div');
+  s.className = 'sw' + (b.k==='type'?' on':''); s.title = b.label; s.dataset.k = b.k;
+  s.style.background = b.k==='type'
+    ? 'conic-gradient(#ee4b4b,#f6c844,#62bb5a,#4f8fd6,#9b59b6,#ee4b4b)'
+    : `linear-gradient(160deg,${b.c[0]},${b.c[1]})`;
+  s.onclick = ()=>{ state.bg=b.k; [...bgRow.children].forEach(x=>x.classList.remove('on'));
+                    s.classList.add('on'); draw(); };
+  bgRow.appendChild(s);
+});
+document.querySelectorAll('#useSeg button').forEach(b=>b.onclick=()=>{
+  state.use=b.dataset.use;
+  document.querySelectorAll('#useSeg button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); draw();
+});
+document.querySelectorAll('#nameSeg button').forEach(b=>b.onclick=()=>{
+  state.name=+b.dataset.name;
+  document.querySelectorAll('#nameSeg button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); draw();
+});
+document.getElementById('mClose').onclick = ()=>modal.classList.remove('on');
+modal.onclick = e=>{ if(e.target===modal) modal.classList.remove('on'); };
+
+function open(d){
+  state.cur = d;
+  document.getElementById('mName').textContent = d.ko;
+  modal.classList.add('on');
+  curImg = new Image(); curImg.crossOrigin = 'anonymous';
+  curImg.onload = draw;
+  curImg.onerror = ()=>{ curImg=null; draw(); };
+  curImg.src = IMG(d.id);
+  draw();
+}
+
+function mixw(hex, t){            /* t 가 클수록 흰색에 가깝게 */
+  const n = parseInt(hex.slice(1),16);
+  const r = (n>>16)&255, g = (n>>8)&255, b = n&255;
+  return `rgb(${Math.round(r+(255-r)*t)},${Math.round(g+(255-g)*t)},${Math.round(b+(255-b)*t)})`;
+}
+
+function draw(){
+  const d = state.cur; if(!d) return;
+  const W = cv.width, H = cv.height;
+  const def = BGS.find(b=>b.k===state.bg);
+  let c1, c2;
+  if(state.bg==='type'){ c1 = mixw(d.colors[0], .66); c2 = d.colors[d.colors.length-1]; }
+  else { c1 = def.c[0]; c2 = def.c[1]; }
+  const g = ctx.createLinearGradient(0,0,W*0.4,H);
+  g.addColorStop(0,c1); g.addColorStop(1,c2);
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+  /* 동글동글 장식 */
+  ctx.save(); ctx.globalAlpha = .13; ctx.fillStyle = '#fff';
+  const seed = d.id;
+  for(let i=0;i<9;i++){
+    const x = ((seed*37 + i*613) % 1000)/1000*W;
+    const y = ((seed*71 + i*929) % 1000)/1000*H;
+    const r = 60 + ((seed*13 + i*277) % 160);
+    ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill();
+  }
+  ctx.restore();
+
+  /* 포켓몬 */
+  if(curImg && curImg.complete && curImg.naturalWidth){
+    const box = state.use==='lock' ? W*0.86 : W*0.80;
+    const cx = W/2, cy = state.use==='lock' ? H*0.645 : H*0.50;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.22)'; ctx.shadowBlur = 48; ctx.shadowOffsetY = 20;
+    ctx.drawImage(curImg, cx-box/2, cy-box/2, box, box);
+    ctx.restore();
+  }
+
+  /* 이름 */
+  if(state.name){
+    const y = state.use==='lock' ? H*0.885 : H*0.80;
+    ctx.save();
+    ctx.textAlign='center'; ctx.font = `700 ${Math.round(W*0.105)}px -apple-system,"Apple SD Gothic Neo",sans-serif`;
+    ctx.shadowColor='rgba(0,0,0,.3)'; ctx.shadowBlur=22; ctx.shadowOffsetY=6;
+    ctx.fillStyle='#fff'; ctx.fillText(d.ko, W/2, y);
+    ctx.restore();
+  }
+}
+
+/* ── 저장 */
+const sv = document.getElementById('sv'), svImg = document.getElementById('svImg');
+document.getElementById('svClose').onclick = ()=>sv.classList.remove('on');
+document.getElementById('make').onclick = ()=>{
+  try{
+    svImg.src = cv.toDataURL('image/png');
+    sv.classList.add('on');
+  }catch(e){
+    alert('그림을 만들지 못했어요. 잠시 뒤 다시 눌러 주세요.');
+  }
+};
+document.getElementById('dl').onclick = ()=>{
+  try{
+    const a = document.createElement('a');
+    a.download = `${state.cur.ko}_배경화면.png`;
+    a.href = cv.toDataURL('image/png'); a.click();
+  }catch(e){ alert('내려받지 못했어요.'); }
+};
+
+render();
+</script>
+</body>
+</html>
